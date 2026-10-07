@@ -16,5 +16,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // A DST-observing zone, so date tests cover clock changes.
+    env: { TZ: 'America/New_York' },
   },
 })
