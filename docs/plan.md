@@ -42,7 +42,8 @@ type LocalDateTime = string;     // 'yyyy-MM-ddTHH:mm' (local, no tz)
 interface Meta { createdAt: number; updatedAt: number } // epoch ms
 
 interface Exercise extends Meta {
-  id: ID; name: string;          // unique, case-insensitive
+  id: ID; name: string;
+  nameKey: string;               // lower-cased name, unique index
   kind: 'weighted' | 'bodyweight';
   archived?: boolean;
 }
@@ -77,7 +78,7 @@ interface Payment extends Meta {
   id: ID; date: DayKey;
   amountMinor: number;           // integer, > 0
   categoryId: ID;
-  merchant: string;              // description/merchant
+  merchant?: string;             // description/merchant (optional for fast entry)
   notes?: string;
 }
 
@@ -85,7 +86,7 @@ interface Settings {             // single row, id = 'app'
   id: 'app';
   currency: string;              // ISO 4217, default 'NPR'
   weightUnit: 'kg' | 'lb';
-  weekStartsOn: 0 | 1;
+  weekStartsOn: 0 | 1;           // default 0 (Sunday)
   theme: 'system' | 'light' | 'dark';
   sleepTargetMin: number;        // e.g. 480
   lastBackupAt?: number;
@@ -98,10 +99,12 @@ Dexie indexes (v1):
 workouts:   id, date, name, *exerciseIds, updatedAt
 sleep:      id, &date, updatedAt              // one sleep entry per night
 payments:   id, date, categoryId, [categoryId+date], updatedAt
-exercises:  id, &name, archived
-categories: id, order, archived
+exercises:  id, &nameKey, updatedAt
+categories: id, order, updatedAt
 settings:   id
 ```
+
+`archived` is not indexed because IndexedDB can't index booleans. Archived rows are filtered in code.
 
 ---
 
