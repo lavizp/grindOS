@@ -30,7 +30,7 @@ import {
 } from 'lucide-react'
 
 // Category icons are stored by name. Only these are offered, so the full
-// lucide set never ends up in the bundle. Step 10's category editor uses this list.
+// lucide set never ends up in the bundle. The category editor offers this list.
 
 export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   utensils: Utensils,
@@ -61,3 +61,19 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'piggy-bank': PiggyBank,
   'circle-ellipsis': CircleEllipsis,
 }
+
+/** Colors offered for categories: distinct, and readable on light and dark tiles. */
+export const CATEGORY_COLORS = [
+  '#f97316',
+  '#ef4444',
+  '#ec4899',
+  '#a855f7',
+  '#8b5cf6',
+  '#3b82f6',
+  '#06b6d4',
+  '#14b8a6',
+  '#22c55e',
+  '#eab308',
+  '#a16207',
+  '#64748b',
+]

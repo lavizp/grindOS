@@ -70,6 +70,20 @@ export const routes: RouteObject[] = [
         lazy: () =>
           import('@/features/settings/settings-page').then((m) => ({ Component: m.SettingsPage })),
       },
+      {
+        path: 'settings/categories',
+        lazy: () =>
+          import('@/features/settings/categories-page').then((m) => ({
+            Component: m.CategoriesPage,
+          })),
+      },
+      {
+        path: 'settings/exercises',
+        lazy: () =>
+          import('@/features/settings/exercises-page').then((m) => ({
+            Component: m.ExercisesPage,
+          })),
+      },
       { path: '*', Component: NotFoundPage },
     ],
   },
