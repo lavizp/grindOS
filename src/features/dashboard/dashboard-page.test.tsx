@@ -17,6 +17,10 @@ function section(name: string) {
   return screen.getByRole('heading', { name }).closest('section, a')! as HTMLElement
 }
 
+beforeEach(async () => {
+  await repositories.settings.update({ onboardedAt: 1 })
+})
+
 afterEach(async () => {
   await Promise.all([db.workouts.clear(), db.sleep.clear(), db.payments.clear()])
   await repositories.settings.update({ lastBackupAt: undefined })

@@ -45,6 +45,10 @@ describe('insights page', () => {
 })
 
 describe('dashboard insights', () => {
+  beforeEach(async () => {
+    await repositories.settings.update({ onboardedAt: 1 })
+  })
+
   it('shows the top insights with a link to all of them', async () => {
     await logShortWeek()
     renderAt('/')

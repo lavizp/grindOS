@@ -137,7 +137,7 @@ describe('history page', () => {
     await seed()
     const { user } = renderHistory()
     await screen.findByRole('heading', { level: 2, name: 'Today' })
-    await user.click(screen.getByRole('tab', { name: 'Day' }))
+    await user.click(screen.getByRole('radio', { name: 'Day' }))
 
     expect(await screen.findByText('Today', { selector: '[aria-live]' })).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByText('NEA')).not.toBeInTheDocument())

@@ -17,6 +17,7 @@ import {
   useWorkouts,
 } from '@/hooks/use-data'
 import { InstallHint } from '@/features/dashboard/install-hint'
+import { Welcome } from '@/features/dashboard/welcome'
 import { InsightList } from '@/features/insights/insight-list'
 import { useInsights } from '@/features/insights/use-insights'
 import { qualityLevel } from '@/features/sleep/quality'
@@ -108,6 +109,11 @@ export function DashboardPage() {
     payments === undefined ||
     categories === undefined ||
     firstLoggedDay === undefined
+
+  // A fresh install starts with a welcome. Anyone with data already skips it.
+  if (settings && settings.onboardedAt === undefined && firstLoggedDay === null) {
+    return <Welcome settings={settings} />
+  }
 
   return (
     <>
