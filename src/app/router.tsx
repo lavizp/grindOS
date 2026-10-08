@@ -8,9 +8,7 @@ import { NotFoundPage } from '@/features/not-found-page'
 // which keeps Recharts out of the initial bundle.
 
 const workoutSheet = () =>
-  import('@/components/common/entry-sheet-placeholder').then(({ EntrySheetPlaceholder }) => ({
-    Component: () => <EntrySheetPlaceholder domain="workout" />,
-  }))
+  import('@/features/workouts/workout-sheet').then((m) => ({ Component: m.WorkoutSheet }))
 
 const sleepSheet = () =>
   import('@/features/sleep/sleep-sheet').then((m) => ({ Component: m.SleepSheet }))
@@ -33,6 +31,12 @@ export const routes: RouteObject[] = [
           { path: 'new', lazy: workoutSheet },
           { path: ':id', lazy: workoutSheet },
         ],
+      },
+      {
+        // Outranks /workouts/:id because a static segment beats a dynamic one.
+        path: 'workouts/exercises/:exerciseId',
+        lazy: () =>
+          import('@/features/workouts/exercise-page').then((m) => ({ Component: m.ExercisePage })),
       },
       {
         path: 'sleep',

@@ -166,17 +166,18 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 ### Step 6: Workouts (the most complex form)
 - **Logging flow:**
   - Start a workout: name chips (recent names, plus Push/Pull/Legs/Run). The date defaults to today and the start time defaults to now.
-  - **"Repeat last [Push]"** pre-fills the exercises and the last sets used.
-  - Add an exercise with a searchable catalog combobox. Typing a new name creates the exercise inline.
-  - Each set is one row (reps × weight) with a "+ set" button that copies the previous set. Show "last time: 3×8 @ 60kg" hints.
-  - Reorder or remove exercises. Duration and notes are optional.
-  - Autosave a draft, so closing the sheet doesn't lose data.
-- Workout detail and edit, and delete with confirmation.
-- Workouts page: this week's count against a streak, a calendar heatmap, recent workouts, and the most frequent exercises.
-- Exercise detail view: progress chart (top set weight and estimated 1RM via Epley), volume over time, and personal records (heaviest weight, best e1RM, most reps at a weight).
-- `lib/calculations/workouts.ts`: `getWorkoutFrequency`, `getWeeklyCounts`, `getStreak`, `getTopExercises`, `getExerciseProgress`, `getPersonalRecords`, `getVolume`.
+  - **"Repeat last [Push]"** pre-fills the exercises and the last sets used, converted to the current unit if needed.
+  - Add an exercise with a search box over the catalog. Typing a new name offers to create it inline, as a weighted or bodyweight exercise. A newly added exercise starts with last time's sets.
+  - Each set is one row (reps × weight; bodyweight exercises have reps only) with an "Add set" button that copies the previous set. Show "Last time (Oct 3): 8, 8, 7 @ 80 kg" hints.
+  - Reorder exercises with up/down buttons, or remove them. Duration and notes are optional.
+  - Autosave a draft of a new workout, so closing the sheet doesn't lose data. Reopening offers to discard it. Edits to saved workouts aren't drafted.
+  - After saving: a toast with **Undo**, naming any new personal record ("New record: Bench Press").
+- Tapping a workout opens it in the same sheet for editing; delete is there, behind a confirmation. There's no separate read-only detail view.
+- Workouts page: this week's count with a weekly streak (a week still in progress doesn't break it), time and volume, a 12-week calendar heatmap, the period's workouts, and the most frequent exercises.
+- Exercise detail view (`/workouts/exercises/:id`): records (heaviest set, best e1RM via Epley, most reps, sessions), a progress chart (top set weight and e1RM), volume per session (reps per session for bodyweight), most reps at each weight, and the session history.
+- `lib/calculations/workouts.ts`: `getWorkoutFrequency`, `getDailyCounts`, `getWeeklyCounts`, `getStreak`, `getTopExercises`, `getExerciseProgress`, `getPersonalRecords`, `findNewRecords`, `getVolume`, `estimateOneRepMax`, `convertWeight`. Weights logged in another unit are converted before comparing.
 
-**Tests:** calculations (PR detection, e1RM, streaks across week boundaries) and a component test for the set editor.
+**Tests:** calculations (PR detection, e1RM, streaks across week boundaries) and component tests for the set editor and the rest of the logging flow.
 
 ### Step 7: Dashboard
 - Today card: workout done or not (with a quick log button), last night's sleep with a quality dot, and today's spending compared with the daily average.

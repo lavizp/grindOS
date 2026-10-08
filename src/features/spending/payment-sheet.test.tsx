@@ -47,6 +47,8 @@ describe('payment sheet', () => {
     expect(saved).toMatchObject({ amountMinor: 125050, categoryId: 'cat_food', date: todayKey() })
     expect(saved.merchant).toBeUndefined()
 
+    // The closing sheet blocks pointer events until it has gone.
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     await user.click(await screen.findByRole('button', { name: 'Undo' }))
     await waitFor(async () => expect(await db.payments.count()).toBe(0))
   })
