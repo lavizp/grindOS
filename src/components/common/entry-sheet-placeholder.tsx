@@ -17,7 +17,7 @@ export function EntrySheetPlaceholder({ domain }: { domain: Domain }) {
     <FormSheet
       open
       onOpenChange={(open) => !open && close()}
-      title={id ? `Edit ${config.entryLabel}` : `Log ${config.entryLabel}`}
+      title={id ? `Edit ${config.entryLabel}` : config.addLabel}
     >
       <div className="flex flex-col items-center py-10 text-center">
         <span className={cn('mb-4 grid size-14 place-items-center rounded-2xl', config.softBg)}>

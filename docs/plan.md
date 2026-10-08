@@ -146,10 +146,10 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 **Done when:** you can navigate every route on a phone-sized viewport and the quick-add sheet opens.
 
 ### Step 4: Spending (built first because it's the most important and the simplest)
-- **Fast entry form:** large numeric amount input (`inputmode="decimal"`, autofocused) → category chips (one tap) → merchant with autocomplete from recent merchants → date (defaults to today) → collapsed notes. Target: about 3 taps plus typing the amount.
-- After saving: a toast with an **Undo** action.
-- Spending page: totals for this week and this month, a category breakdown (donut and ranked bars), a daily/monthly trend, the largest expenses, and a list grouped by day with tap-to-edit and swipe-or-menu delete.
-- `lib/calculations/spending.ts`: `getTotalSpending`, `getSpendingByCategory`, `getDailySpending`, `getMonthlySpending`, `getTopCategories`, `getLargestExpenses`, `getAverageDaily`, `compareMonths`.
+- **Fast entry form:** large numeric amount input (`inputmode="decimal"`, autofocused) → category chips (one tap) → merchant with autocomplete from recent merchants (picking one also fills in the category last used with it, unless one is already chosen) → date (Today / Yesterday chips, or a date picker) → collapsed notes. Target: about 3 taps plus typing the amount.
+- After saving (adding or editing): a toast with an **Undo** action.
+- Spending page: totals for this week and this month, a category breakdown (donut and ranked bars), a daily/monthly trend, the largest expenses, and a list grouped by day with tap-to-edit. Delete is in the edit sheet, behind a confirmation. The period total is compared like-for-like with the same point in the previous period.
+- `lib/calculations/spending.ts`: `getTotalSpending`, `getSpendingByCategory`, `getDailySpending`, `getMonthlySpending`, `getTopCategories`, `getLargestExpenses`, `getAverageDaily`, `compareMonths` (built on a general `comparePeriods`, which also handles weeks).
 
 **Tests:** every calculation function, plus a form validation test (amount > 0, category required).
 

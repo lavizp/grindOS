@@ -22,7 +22,7 @@ export type Repositories = ReturnType<typeof createRepositories>
 
 export type { CategoryRepository, NewCategoryInput } from '@/db/repositories/categories'
 export type { ExerciseRepository } from '@/db/repositories/exercises'
-export type { PaymentRepository } from '@/db/repositories/payments'
+export type { MerchantSuggestion, PaymentRepository } from '@/db/repositories/payments'
 export type { SettingsPatch, SettingsRepository } from '@/db/repositories/settings'
 export type { SleepRepository } from '@/db/repositories/sleep'
 export type { WorkoutRepository } from '@/db/repositories/workouts'

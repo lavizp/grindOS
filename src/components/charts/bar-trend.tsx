@@ -29,6 +29,8 @@ interface BarTrendProps {
   data: TrendPoint[]
   color: ChartColor
   formatValue: (value: number) => string
+  /** Tooltip title for a point's key, e.g. a full date. Defaults to the key. */
+  formatKey?: (key: string) => string
   /** Optional reference line, e.g. a sleep target or daily average. */
   target?: number
   /** Keys to draw at full strength; others are muted. Defaults to all. */
@@ -41,6 +43,7 @@ export function BarTrend({
   data,
   color,
   formatValue,
+  formatKey,
   target,
   highlightKey,
   height = 200,
@@ -63,6 +66,7 @@ export function BarTrend({
                 payload={payload}
                 label={payload?.[0]?.payload?.key}
                 formatValue={formatValue}
+                formatLabel={formatKey}
               />
             )}
           />

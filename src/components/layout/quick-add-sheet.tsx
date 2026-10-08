@@ -54,7 +54,7 @@ export function QuickAddSheet({ open, onOpenChange }: QuickAddSheetProps) {
                     <Icon className={cn('size-6', config.text)} aria-hidden />
                   </span>
                   <span className="flex-1">
-                    <span className="block font-medium">Log {config.entryLabel}</span>
+                    <span className="block font-medium">{config.addLabel}</span>
                     <span className="block text-sm text-muted-foreground">{HINTS[domain]}</span>
                   </span>
                   <ChevronRight className="size-5 text-muted-foreground" aria-hidden />

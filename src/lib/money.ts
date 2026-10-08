@@ -48,6 +48,8 @@ export function parseMoneyInput(input: string, currency: string): number | null 
 export interface FormatMoneyOptions {
   /** 12.3K style, for chart axes and tight spaces. */
   compact?: boolean
+  /** Round to whole units, for derived figures like averages. */
+  whole?: boolean
   locale?: string
 }
 
@@ -55,15 +57,27 @@ export interface FormatMoneyOptions {
 export function formatMoney(
   minor: number,
   currency: string,
-  { compact = false, locale }: FormatMoneyOptions = {},
+  { compact = false, whole = false, locale }: FormatMoneyOptions = {},
 ): string {
   const decimals = currencyDecimals(currency)
+  if (whole) minor = Math.round(minor / 10 ** decimals) * 10 ** decimals
   const isWhole = minor % 10 ** decimals === 0
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
+    currencyDisplay: 'narrowSymbol',
     notation: compact ? 'compact' : 'standard',
     minimumFractionDigits: compact || isWhole ? 0 : decimals,
     maximumFractionDigits: compact ? 1 : decimals,
   }).format(fromMinor(minor, currency))
+}
+
+/** The symbol shown next to an amount field: "Rs", "$", "€". */
+export function currencySymbol(currency: string, locale?: string): string {
+  const parts = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'narrowSymbol',
+  }).formatToParts(0)
+  return parts.find((p) => p.type === 'currency')?.value ?? currency
 }

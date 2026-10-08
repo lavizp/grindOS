@@ -10,10 +10,16 @@ import { byDateDesc, createCrud } from '@/db/repositories/crud'
 import { RecordNotFoundError, type RangeRepository, type RepoDeps } from '@/db/repositories/types'
 import type { DayRange } from '@/lib/dates'
 
+export interface MerchantSuggestion {
+  merchant: string
+  /** Category of the most recent payment to this merchant. */
+  categoryId: ID
+}
+
 export interface PaymentRepository extends RangeRepository<Payment, PaymentInput> {
   listByCategory(categoryId: ID, range?: DayRange): Promise<Payment[]>
-  /** Distinct merchants, most recently used first, for autocomplete. */
-  recentMerchants(limit?: number): Promise<string[]>
+  /** Distinct merchants (case-insensitive), most recently used first, for autocomplete. */
+  recentMerchants(limit?: number): Promise<MerchantSuggestion[]>
 }
 
 export function createPaymentRepository(db: GrindDB, deps: RepoDeps): PaymentRepository {
@@ -53,11 +59,11 @@ export function createPaymentRepository(db: GrindDB, deps: RepoDeps): PaymentRep
 
     async recentMerchants(limit = 10) {
       const recent = await db.payments.orderBy('updatedAt').reverse().limit(200).toArray()
-      const seen = new Map<string, string>()
-      for (const { merchant } of recent) {
+      const seen = new Map<string, MerchantSuggestion>()
+      for (const { merchant, categoryId } of recent) {
         if (!merchant) continue
         const key = merchant.toLowerCase()
-        if (!seen.has(key)) seen.set(key, merchant)
+        if (!seen.has(key)) seen.set(key, { merchant, categoryId })
         if (seen.size >= limit) break
       }
       return [...seen.values()]
