@@ -1,5 +1,5 @@
 import type { GrindDB } from '@/db/database'
-import { sleepInputSchema, sleepSchema, type Sleep, type SleepInput } from '@/db/schema'
+import { sleepInputSchema, sleepSchema, type ID, type Sleep, type SleepInput } from '@/db/schema'
 import { byDateDesc, createCrud } from '@/db/repositories/crud'
 import type { RangeRepository, RepoDeps } from '@/db/repositories/types'
 import type { DayKey } from '@/lib/dates'
@@ -8,6 +8,8 @@ export interface SleepRepository extends RangeRepository<Sleep, SleepInput> {
   /** There is at most one entry per night (keyed by wake-up day). */
   getByDate(date: DayKey): Promise<Sleep | undefined>
   getLatest(): Promise<Sleep | undefined>
+  /** Every logged night's date and entry id, for spotting duplicates before saving. */
+  loggedNights(): Promise<Map<DayKey, ID>>
 }
 
 export function createSleepRepository(db: GrindDB, deps: RepoDeps): SleepRepository {
@@ -36,6 +38,12 @@ export function createSleepRepository(db: GrindDB, deps: RepoDeps): SleepReposit
 
     async getLatest() {
       return db.sleep.orderBy('date').last()
+    },
+
+    async loggedNights() {
+      const nights = new Map<DayKey, ID>()
+      await db.sleep.each((s) => nights.set(s.date, s.id))
+      return nights
     },
   }
 }

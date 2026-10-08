@@ -2,7 +2,6 @@ import type { Payment } from '@/db/schema'
 import {
   compareMonths,
   comparePeriods,
-  elapsedRange,
   getAverageDaily,
   getDailySpending,
   getLargestExpenses,
@@ -12,6 +11,7 @@ import {
   getTotalSpending,
   groupByDay,
 } from '@/lib/calculations/spending'
+import { elapsedRange } from '@/lib/dates'
 
 let seq = 0
 function pay(date: string, amountMinor: number, categoryId = 'cat_food'): Payment {

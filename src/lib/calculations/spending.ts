@@ -2,6 +2,7 @@ import { addMonths, format } from 'date-fns'
 import type { ID, Payment } from '@/db/schema'
 import {
   addDaysToKey,
+  elapsedRange,
   isInRange,
   monthRange,
   parseDayKey,
@@ -114,11 +115,6 @@ export function getLargestExpenses(payments: Payment[], limit = 5, range?: DayRa
 }
 
 /** The part of `range` that has happened by `today` (null if it's all in the future). */
-export function elapsedRange(range: DayRange, today: DayKey): DayRange | null {
-  if (today < range.start) return null
-  return { start: range.start, end: today < range.end ? today : range.end }
-}
-
 /** Average per elapsed day of the range, so a half-finished month isn't understated. */
 export function getAverageDaily(payments: Payment[], range: DayRange, today: DayKey): number {
   const elapsed = elapsedRange(range, today)

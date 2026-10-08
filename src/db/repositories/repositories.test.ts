@@ -161,6 +161,10 @@ describe('sleep', () => {
     expect((await ctx.repos.sleep.getByDate('2026-10-07'))?.quality).toBe(4)
     expect((await ctx.repos.sleep.getLatest())?.date).toBe('2026-10-08')
     expect(await ctx.repos.sleep.getByDate('2026-10-09')).toBeUndefined()
+    expect([...(await ctx.repos.sleep.loggedNights()).keys()].sort()).toEqual([
+      '2026-10-07',
+      '2026-10-08',
+    ])
   })
 
   it('rejects invalid sleep windows on update', async () => {

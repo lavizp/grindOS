@@ -7,10 +7,13 @@ import { NotFoundPage } from '@/features/not-found-page'
 // Home is eager so the app opens instantly. Every other page is split out,
 // which keeps Recharts out of the initial bundle.
 
-const entry = (domain: 'workout' | 'sleep') => () =>
+const workoutSheet = () =>
   import('@/components/common/entry-sheet-placeholder').then(({ EntrySheetPlaceholder }) => ({
-    Component: () => <EntrySheetPlaceholder domain={domain} />,
+    Component: () => <EntrySheetPlaceholder domain="workout" />,
   }))
+
+const sleepSheet = () =>
+  import('@/features/sleep/sleep-sheet').then((m) => ({ Component: m.SleepSheet }))
 
 const paymentSheet = () =>
   import('@/features/spending/payment-sheet').then((m) => ({ Component: m.PaymentSheet }))
@@ -27,16 +30,16 @@ export const routes: RouteObject[] = [
         lazy: () =>
           import('@/features/workouts/workouts-page').then((m) => ({ Component: m.WorkoutsPage })),
         children: [
-          { path: 'new', lazy: entry('workout') },
-          { path: ':id', lazy: entry('workout') },
+          { path: 'new', lazy: workoutSheet },
+          { path: ':id', lazy: workoutSheet },
         ],
       },
       {
         path: 'sleep',
         lazy: () => import('@/features/sleep/sleep-page').then((m) => ({ Component: m.SleepPage })),
         children: [
-          { path: 'new', lazy: entry('sleep') },
-          { path: ':id', lazy: entry('sleep') },
+          { path: 'new', lazy: sleepSheet },
+          { path: ':id', lazy: sleepSheet },
         ],
       },
       {

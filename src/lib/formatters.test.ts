@@ -1,4 +1,10 @@
-import { formatDuration, formatRelativeDay, formatWeight } from '@/lib/formatters'
+import {
+  formatDuration,
+  formatNight,
+  formatRelativeDay,
+  formatTimeOfDay,
+  formatWeight,
+} from '@/lib/formatters'
 
 describe('formatDuration', () => {
   it('formats hours and minutes', () => {
@@ -39,5 +45,24 @@ describe('formatRelativeDay', () => {
   it('uses dates beyond a week, adding the year when it differs', () => {
     expect(formatRelativeDay('2026-09-30', today)).toBe('Sep 30')
     expect(formatRelativeDay('2025-12-25', today)).toBe('Dec 25, 2025')
+  })
+})
+
+describe('formatTimeOfDay', () => {
+  it('formats minutes since midnight in the locale', () => {
+    expect(formatTimeOfDay(23 * 60 + 30, 'en-US')).toBe('11:30 PM')
+    expect(formatTimeOfDay(7 * 60 + 5, 'en-US')).toBe('7:05 AM')
+    expect(formatTimeOfDay(0, 'en-GB')).toBe('00:00')
+  })
+})
+
+describe('formatNight', () => {
+  const today = '2026-10-08' // a Thursday
+  it('names the evening the night started', () => {
+    expect(formatNight('2026-10-08', today)).toBe('Last night')
+    expect(formatNight('2026-10-07', today)).toBe('Tuesday night')
+    expect(formatNight('2026-10-02', today)).toBe('Thursday night')
+    expect(formatNight('2026-10-01', today)).toBe('Night of Sep 30')
+    expect(formatNight('2025-12-01', today)).toBe('Night of Nov 30, 2025')
   })
 })
