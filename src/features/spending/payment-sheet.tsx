@@ -93,7 +93,7 @@ export function PaymentSheet() {
               type="submit"
               form={PAYMENT_FORM_ID}
               disabled={loading || saving}
-              className="h-12 flex-1 rounded-full bg-spending text-base text-white hover:bg-spending/90"
+              className="h-12 flex-1 rounded-full bg-spending text-base text-on-accent hover:bg-spending/90"
             >
               {isEdit ? 'Save changes' : 'Save payment'}
             </Button>

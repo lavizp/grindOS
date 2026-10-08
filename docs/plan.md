@@ -154,12 +154,14 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 **Tests:** every calculation function, plus a form validation test (amount > 0, category required).
 
 ### Step 5: Sleep
-- **Fast entry:** defaults are prefilled from your last entry (or 23:00 → 07:00). Bedtime and wake time pickers show a live duration preview, quality is 5 tappable icons, notes are optional. The date defaults to today, meaning "last night".
-- Enforce one entry per night: if one exists, open it for editing.
-- Sleep page: last night, weekly average compared with the target, a duration bar chart, a bedtime/wake consistency chart, and the best and worst nights.
-- `lib/calculations/sleep.ts`: `getAverageSleep`, `getSleepConsistency` (std-dev of bedtime and wake time, in minutes), `getSleepTrend`, `getBestWorstNights`, `getSleepDebt` (vs target).
+- **Fast entry:** defaults are prefilled from your last entry (or 23:00 → 07:00). Bedtime and wake time pickers show a live duration preview, compared with the target, plus which nights it spans ("Wed night into Thu, Oct 8"). Quality is 5 tappable icons (tap again to clear), and notes are optional. The night is chosen with Last night / Night before chips or a date picker. It defaults to last night, stored as the morning you woke up.
+- After saving (adding or editing): a toast with an **Undo** action. Delete is in the edit sheet, behind a confirmation.
+- Enforce one entry per night: if last night is logged, Log sleep opens it for editing. Picking another night that's already logged shows an error with an "Edit that night" link.
+- Nights are named by the evening they started ("Tuesday night"), in the list and on the chart axes alike.
+- Sleep page: last night (or a prompt to log it), the average compared with the target, nights logged and sleep debt, a duration bar chart with a target line, a bedtime/wake time chart with usual times and their spread, the longest and shortest nights, and the list of nights.
+- `lib/calculations/sleep.ts`: `getAverageSleep`, `getAverageQuality`, `getSleepConsistency` (average and std-dev of bedtime and wake time, in minutes), `getSleepTrend`, `getBestWorstNights`, `getSleepDebt` (net vs target). Times of day are compared on a clock that starts at noon, so 23:30 and 00:30 average to midnight.
 
-**Tests:** calculations, including entries that cross midnight and empty ranges.
+**Tests:** calculations, including entries that cross midnight and empty ranges, plus the form schema, the sheet and the page.
 
 ### Step 6: Workouts (the most complex form)
 - **Logging flow:**

@@ -25,6 +25,8 @@
   --color-sleep-soft: var(--sleep-soft);
   --color-spending: var(--spending);
   --color-spending-soft: var(--spending-soft);
+  /* Text on a solid domain accent. */
+  --color-on-accent: var(--on-accent);
 
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
@@ -86,6 +88,7 @@
   --sleep-soft: #efeafb;
   --spending: #0e9f7e;
   --spending-soft: #e2f4ef;
+  --on-accent: #ffffff;
 
   --chart-1: var(--spending);
   --chart-2: var(--sleep);
@@ -123,6 +126,7 @@
   --sleep-soft: #261f3d;
   --spending: #34c5a0;
   --spending-soft: #12302a;
+  --on-accent: #101216;
 
   --chart-4: #f5a524;
   --chart-5: #98a0ae;

@@ -99,6 +99,12 @@ export function rangeDays(range: DayRange): DayKey[] {
   )
 }
 
+/** The part of `range` up to and including `today`, or null if it hasn't started. */
+export function elapsedRange(range: DayRange, today: DayKey): DayRange | null {
+  if (today < range.start) return null
+  return { start: range.start, end: today < range.end ? today : range.end }
+}
+
 export function isInRange(key: DayKey, range: DayRange): boolean {
   return key >= range.start && key <= range.end
 }

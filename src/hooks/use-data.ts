@@ -50,3 +50,7 @@ export function useRecentMerchants(limit = 20) {
 export function useCurrency(): string {
   return useSettings()?.currency ?? DEFAULT_SETTINGS.currency
 }
+
+export function useSleepTarget(): number {
+  return useSettings()?.sleepTargetMin ?? DEFAULT_SETTINGS.sleepTargetMin
+}
