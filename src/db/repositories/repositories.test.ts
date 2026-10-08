@@ -231,6 +231,16 @@ describe('workouts', () => {
     const rows = await ctx.repos.workouts.listByRange({ start: '2026-10-04', end: '2026-10-10' })
     expect(rows).toHaveLength(1)
   })
+
+  it('lists the most recent workouts first', async () => {
+    await ctx.repos.workouts.create({ ...push, date: '2026-10-01' })
+    await ctx.repos.workouts.create({ ...push, date: '2026-10-07', name: 'Legs' })
+    await ctx.repos.workouts.create(push)
+    expect((await ctx.repos.workouts.listRecent(2)).map((w) => w.date)).toEqual([
+      '2026-10-07',
+      '2026-10-05',
+    ])
+  })
 })
 
 describe('exercises', () => {

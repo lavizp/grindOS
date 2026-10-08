@@ -2,6 +2,7 @@ import {
   formatDuration,
   formatNight,
   formatRelativeDay,
+  formatSets,
   formatTimeOfDay,
   formatWeight,
 } from '@/lib/formatters'
@@ -64,5 +65,52 @@ describe('formatNight', () => {
     expect(formatNight('2026-10-02', today)).toBe('Thursday night')
     expect(formatNight('2026-10-01', today)).toBe('Night of Sep 30')
     expect(formatNight('2025-12-01', today)).toBe('Night of Nov 30, 2025')
+  })
+})
+
+describe('formatSets', () => {
+  it('collapses identical sets', () => {
+    expect(
+      formatSets(
+        [
+          { reps: 8, weight: 60 },
+          { reps: 8, weight: 60 },
+          { reps: 8, weight: 60 },
+        ],
+        'kg',
+        'en-US',
+      ),
+    ).toBe('3×8 @ 60 kg')
+    expect(formatSets([{ reps: 5, weight: 102.5 }], 'kg', 'en-US')).toBe('5 @ 102.5 kg')
+    expect(formatSets([{ reps: 12 }, { reps: 12 }], 'kg')).toBe('2×12')
+  })
+
+  it('groups reps at one weight', () => {
+    expect(
+      formatSets(
+        [
+          { reps: 8, weight: 80 },
+          { reps: 8, weight: 80 },
+          { reps: 7, weight: 80 },
+        ],
+        'kg',
+        'en-US',
+      ),
+    ).toBe('8, 8, 7 @ 80 kg')
+  })
+
+  it('lists sets that differ', () => {
+    expect(
+      formatSets(
+        [
+          { reps: 8, weight: 60 },
+          { reps: 6, weight: 65 },
+        ],
+        'lb',
+        'en-US',
+      ),
+    ).toBe('8 @ 60, 6 @ 65 lb')
+    expect(formatSets([{ reps: 12 }, { reps: 10 }], 'kg')).toBe('12, 10')
+    expect(formatSets([], 'kg')).toBe('No sets')
   })
 })

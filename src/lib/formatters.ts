@@ -52,3 +52,29 @@ export function formatNight(wakeDay: DayKey, today: DayKey = todayKey()): string
     ? `Night of ${format(evening, 'MMM d')}`
     : `Night of ${format(evening, 'MMM d, yyyy')}`
 }
+
+/**
+ * Sets in a short line: "3×8 @ 60 kg" when they're all the same, "8, 8, 7 @ 80 kg"
+ * at one weight, otherwise "8 @ 60, 6 @ 65 kg". Bodyweight sets drop the
+ * weight: "3×12", "12, 10, 8".
+ */
+export function formatSets(
+  sets: ReadonlyArray<{ reps: number; weight?: number }>,
+  unit: 'kg' | 'lb',
+  locale?: string,
+): string {
+  if (sets.length === 0) return 'No sets'
+  const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 })
+  const weighted = sets.some((s) => s.weight)
+  const same = sets.every((s) => s.reps === sets[0].reps && s.weight === sets[0].weight)
+  if (same) {
+    const reps = sets.length > 1 ? `${sets.length}×${sets[0].reps}` : `${sets[0].reps}`
+    return sets[0].weight ? `${reps} @ ${number.format(sets[0].weight)} ${unit}` : reps
+  }
+  // Same weight throughout: "8, 8, 7 @ 80 kg".
+  if (weighted && sets.every((s) => s.weight === sets[0].weight)) {
+    return `${sets.map((s) => s.reps).join(', ')} @ ${number.format(sets[0].weight!)} ${unit}`
+  }
+  const parts = sets.map((s) => (s.weight ? `${s.reps} @ ${number.format(s.weight)}` : `${s.reps}`))
+  return weighted ? `${parts.join(', ')} ${unit}` : parts.join(', ')
+}

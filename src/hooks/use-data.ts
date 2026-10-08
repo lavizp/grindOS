@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { repositories } from '@/db'
-import { DEFAULT_SETTINGS, type ID } from '@/db/schema'
+import { DEFAULT_SETTINGS, type ID, type WeightUnit } from '@/db/schema'
 import type { DayRange } from '@/lib/dates'
 
 // Live queries re-run automatically whenever the underlying tables change.
@@ -53,4 +53,12 @@ export function useCurrency(): string {
 
 export function useSleepTarget(): number {
   return useSettings()?.sleepTargetMin ?? DEFAULT_SETTINGS.sleepTargetMin
+}
+
+export function useWeightUnit(): WeightUnit {
+  return useSettings()?.weightUnit ?? DEFAULT_SETTINGS.weightUnit
+}
+
+export function useRecentWorkouts(limit = 200) {
+  return useLiveQuery(() => repositories.workouts.listRecent(limit), [limit])
 }

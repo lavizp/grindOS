@@ -14,6 +14,8 @@ export interface WorkoutRepository extends RangeRepository<Workout, WorkoutInput
   listByExercise(exerciseId: ID): Promise<Workout[]>
   /** Most recent workout with this name, for "repeat last Push". */
   getLatestByName(name: string): Promise<Workout | undefined>
+  /** The latest workouts, newest first: hints, repeats and name chips come from these. */
+  listRecent(limit?: number): Promise<Workout[]>
   /** Distinct workout names, most recent first, for quick-pick chips. */
   recentNames(limit?: number): Promise<string[]>
 }
@@ -49,6 +51,11 @@ export function createWorkoutRepository(db: GrindDB, deps: RepoDeps): WorkoutRep
     async getLatestByName(name) {
       const rows = await db.workouts.where('name').equals(name.trim()).toArray()
       return rows.sort(byDateDesc)[0]
+    },
+
+    async listRecent(limit = 200) {
+      const rows = await db.workouts.orderBy('date').reverse().limit(limit).toArray()
+      return rows.sort(byDateDesc)
     },
 
     async recentNames(limit = 8) {

@@ -40,6 +40,8 @@ describe('sleep sheet', () => {
       { date: today, bedtime: `${yesterday}T23:00`, wakeTime: `${today}T07:00`, quality: 4 },
     ])
 
+    // The closing sheet blocks pointer events until it has gone.
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     await user.click(await screen.findByRole('button', { name: 'Undo' }))
     await waitFor(async () => expect(await db.sleep.count()).toBe(0))
   })
