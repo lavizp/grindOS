@@ -197,15 +197,16 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 - `features/history/timeline.ts`: `buildTimeline` (pure, tested).
 
 ### Step 9: Insights engine
-- `lib/calculations/insights.ts`: each generator is a pure function `(data, now, settings) => Insight[]`, where `Insight = { id, domain, severity: 'positive'|'neutral'|'warning', priority, title, detail? }`.
-- Initial rule set:
-  - **Spending:** category up or down X% compared with the same point last month (comparing like-for-like day counts), most expensive category this month, a spending pace projection for month-end, and an unusually large expense (more than 3× the median).
-  - **Sleep:** weekly average compared with the target, consistency changes, and the best or worst weekday.
-  - **Workouts:** count this week compared with your 4-week average, the current streak, a new PR this week, and an exercise not done in 14+ days.
-  - **Cross-domain:** sleep after workout days compared with rest days, and sleep after late workouts (`startTime` ≥ 20:00) compared with others. Only show these when n ≥ 5 per group, to avoid noisy claims.
-- A minimum-data threshold on every rule. Insights page grouped by domain. The dashboard shows the top items by priority.
+- `lib/calculations/insights/` (one file per area, plus `index.ts`): each rule is a pure function `({ data, today, settings }) => Insight[]`, where `Insight = { id, domain, severity: 'positive'|'neutral'|'warning', priority, title, detail?, link? }`. `domain` is a domain or `'cross'`. `getInsights` runs every rule and sorts by priority.
+- Rule set, each with its own minimum-data threshold:
+  - **Spending:** the biggest category rise and fall (≥ 25%) compared with the same point last month, like-for-like, from day 7 of the month and with ≥ 4 payments; the biggest category this month (≥ 5 payments); a month-end pace projection compared with last month (from day 7); and an unusually large payment in the last week (more than 3× the 90-day median, with ≥ 10 payments).
+  - **Sleep:** the last week's average against the target (≥ 4 nights; warns when more than 15m under); bedtime consistency over the last two weeks against the two before (≥ 5 nights each, a change ≥ 15m); and a clearly shorter or longer night of the week over 8 weeks (≥ 14 nights, a difference ≥ 45m).
+  - **Workouts:** this week's count against your 4-week average (only pointing out "behind" from day 4 of the week); a streak of 3+ weeks; new personal records in the last week; and a regular exercise (3+ sessions in 90 days) not done in 14+ days.
+  - **Cross-domain:** sleep after workout days compared with rest days, and sleep after late workouts (`startTime` ≥ 20:00) compared with earlier ones, over 90 days. Only shown with n ≥ 5 nights per group and a difference of at least 15m.
+- Insights page grouped by area (Training, Sleep, Spending, Sleep and training). The dashboard shows the top 3 by priority, with "See all", and leaves the card out when there's nothing to say.
+- Insights look at the last 365 days of data.
 
-**Tests:** fixture data for each rule, including "not enough data → no insight".
+**Tests:** fixture data for each rule, including "not enough data → no insight", and that no rule says anything without data.
 
 ### Step 10: Settings, categories and backup
 - Settings: currency, weight unit, week start, theme, sleep target.

@@ -16,6 +16,8 @@ import {
   useSleepEntries,
   useWorkouts,
 } from '@/hooks/use-data'
+import { InsightList } from '@/features/insights/insight-list'
+import { useInsights } from '@/features/insights/use-insights'
 import { qualityLevel } from '@/features/sleep/quality'
 import {
   daysSinceBackup,
@@ -148,6 +150,7 @@ export function DashboardPage() {
             payments={payments}
             currency={currency}
           />
+          <InsightsCard />
           <WeekCard
             today={today}
             ranges={ranges}
@@ -416,6 +419,29 @@ function MonthCard({ today, month, payments, categories, currency }: MonthCardPr
         </div>
       )}
     </Link>
+  )
+}
+
+/** Top few insights, by priority. Hidden until there are any. */
+const DASHBOARD_INSIGHTS = 3
+
+function InsightsCard() {
+  const insights = useInsights()
+  if (!insights || insights.length === 0) return null
+  return (
+    <SectionCard
+      title="Insights"
+      aside={
+        <Link
+          to="/insights"
+          className="font-medium text-foreground underline-offset-4 hover:underline"
+        >
+          See all {insights.length}
+        </Link>
+      }
+    >
+      <InsightList insights={insights.slice(0, DASHBOARD_INSIGHTS)} />
+    </SectionCard>
   )
 }
 
