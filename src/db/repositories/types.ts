@@ -1,4 +1,4 @@
-import type { DayRange } from '@/lib/dates'
+import type { DayKey, DayRange } from '@/lib/dates'
 import type { ID } from '@/db/schema'
 
 export interface RepoDeps {
@@ -23,6 +23,8 @@ export interface CrudRepository<T, TInput> {
 export interface RangeRepository<T, TInput> extends CrudRepository<T, TInput> {
   /** Records whose `date` falls in the inclusive range, newest first. */
   listByRange(range: DayRange): Promise<T[]>
+  /** The oldest record's date, or undefined when there are none. */
+  earliestDate(): Promise<DayKey | undefined>
 }
 
 // Names must not collide with Dexie's built-in error names (e.g. "NotFoundError"),

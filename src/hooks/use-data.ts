@@ -62,3 +62,16 @@ export function useWeightUnit(): WeightUnit {
 export function useRecentWorkouts(limit = 200) {
   return useLiveQuery(() => repositories.workouts.listRecent(limit), [limit])
 }
+
+/** The first day anything was logged, across every kind of entry. Null when nothing has been. */
+export function useFirstLoggedDay() {
+  return useLiveQuery(async () => {
+    const dates = await Promise.all([
+      repositories.workouts.earliestDate(),
+      repositories.sleep.earliestDate(),
+      repositories.payments.earliestDate(),
+    ])
+    const known = dates.filter((d): d is string => d !== undefined).sort()
+    return known[0] ?? null
+  }, [])
+}

@@ -39,6 +39,10 @@ export function createPaymentRepository(db: GrindDB, deps: RepoDeps): PaymentRep
   return {
     ...crud,
 
+    async earliestDate() {
+      return (await db.payments.orderBy('date').first())?.date
+    },
+
     async listByRange(range) {
       const rows = await db.payments
         .where('date')

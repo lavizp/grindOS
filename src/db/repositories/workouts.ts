@@ -35,6 +35,10 @@ export function createWorkoutRepository(db: GrindDB, deps: RepoDeps): WorkoutRep
   return {
     ...crud,
 
+    async earliestDate() {
+      return (await db.workouts.orderBy('date').first())?.date
+    },
+
     async listByRange(range) {
       const rows = await db.workouts
         .where('date')
