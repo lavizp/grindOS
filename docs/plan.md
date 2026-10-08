@@ -209,14 +209,15 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 **Tests:** fixture data for each rule, including "not enough data → no insight", and that no rule says anything without data.
 
 ### Step 10: Settings, categories and backup
-- Settings: currency, weight unit, week start, theme, sleep target.
-- Category manager: rename, change icon and color, reorder, archive, add new.
-- Exercise catalog manager: rename, merge duplicates, archive.
-- **Export:** JSON `{ app: 'grindOS', schemaVersion, exportedAt, data: {...tables} }`. Use `navigator.share` with a File on iOS (so it can be saved to Files or AirDrop), and fall back to a download link on desktop. Exporting updates `lastBackupAt`.
-- **Import:** pick a file → Zod validation → a preview (counts per table) → **Replace all** or **Merge** (upsert by `id`, keeping the newer `updatedAt`). It runs in a single Dexie transaction and is rolled back if it fails.
-- A "Delete all data" option with typed confirmation.
+- Settings: currency (any the browser knows; amounts already logged aren't converted), weight unit (for new workouts), week start, theme, sleep target (5h–11h in 15-minute steps). Each saves as soon as it changes.
+- Category manager (`/settings/categories`): add, rename, change icon and color, reorder (up/down), archive (with Undo) and restore.
+- Exercise catalog manager (`/settings/exercises`): search, rename (a taken name points to merging instead), change between weighted and bodyweight, merge a duplicate into another exercise (its workouts move over), archive and restore. New exercises are still added while logging.
+- **Export:** JSON `{ app: 'grindOS', schemaVersion, exportedAt, data: {...tables} }`. Uses `navigator.share` with a File where files can be shared (iOS: Files, AirDrop), and falls back to a download. Exporting updates `lastBackupAt`; closing the share sheet doesn't count.
+- **Import:** pick a file → Zod validation with the app's own schemas (with readable errors for non-backups, newer versions and damaged records) → a preview (counts per table) → **Merge** or **Replace all**. Merge upserts by `id`, keeping the newer `updatedAt`; a night logged under different ids on each side keeps the newer one; an exercise with the same name is folded into the local one and its workouts remapped; local settings are kept, apart from a newer backup date. It runs in a single Dexie transaction and is rolled back if it fails.
+- A "Delete all data" option with typed confirmation ("delete"). It resets to a fresh install: default categories, exercises and settings, and clears any workout draft.
+- `db/backup.ts`: `exportBackup`, `parseBackup`, `summarizeBackup`, `importBackup`, `deleteAllData`. `lib/save-file.ts`: share or download.
 
-**Tests:** export → import round-trip produces identical data, invalid files are rejected, and merge conflict resolution works.
+**Tests:** export → import round-trip produces identical data, invalid files are rejected, merge conflict resolution works, a failed import changes nothing, plus the settings page and both managers.
 
 ### Step 11: PWA and iOS polish
 - `vite-plugin-pwa` (`generateSW`, `registerType: 'prompt'`): precache the app shell and assets, with `navigateFallback` set to `index.html`. The "Update available → Reload" toast prevents stale versions.

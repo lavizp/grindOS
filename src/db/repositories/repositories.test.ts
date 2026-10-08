@@ -318,3 +318,33 @@ describe('settings', () => {
     expect((await ctx.repos.settings.get()).weightUnit).toBe('lb')
   })
 })
+
+describe('exercise merging', () => {
+  it('moves workouts to the target and deletes the duplicate', async () => {
+    const dupe = await ctx.repos.exercises.create({ name: 'Bench', kind: 'weighted' })
+    const workout = await ctx.repos.workouts.create({
+      date: '2026-10-05',
+      name: 'Push',
+      unit: 'kg',
+      entries: [
+        { exerciseId: dupe.id, sets: [{ reps: 5, weight: 60 }] },
+        { exerciseId: 'ex_bench_press', sets: [{ reps: 5, weight: 70 }] },
+      ],
+    })
+    ctx.clock.advance()
+    expect(await ctx.repos.exercises.merge(dupe.id, 'ex_bench_press')).toBe(1)
+
+    const merged = await ctx.repos.workouts.getById(workout.id)
+    expect(merged?.entries.map((e) => e.exerciseId)).toEqual(['ex_bench_press', 'ex_bench_press'])
+    expect(merged?.exerciseIds).toEqual(['ex_bench_press'])
+    expect(merged!.updatedAt).toBeGreaterThan(workout.updatedAt)
+    expect(await ctx.repos.exercises.getById(dupe.id)).toBeUndefined()
+    expect((await ctx.repos.exercises.usageCounts()).get('ex_bench_press')).toBe(1)
+  })
+
+  it('refuses to merge into itself or a missing exercise', async () => {
+    await expect(ctx.repos.exercises.merge('ex_dips', 'ex_dips')).rejects.toThrow()
+    await expect(ctx.repos.exercises.merge('ex_dips', 'nope')).rejects.toThrow()
+    expect(await ctx.repos.exercises.getById('ex_dips')).toBeDefined()
+  })
+})
