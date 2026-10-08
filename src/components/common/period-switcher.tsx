@@ -4,11 +4,15 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import type { DayKey, DayRange, WeekStart } from '@/lib/dates'
 import { formatPeriodLabel, isCurrentPeriod, shiftAnchor } from '@/lib/periods'
-import type { Period } from '@/stores/app-store'
+import type { Span } from '@/stores/app-store'
 
-interface PeriodSwitcherProps {
-  period: Period
-  onPeriodChange: (period: Period) => void
+const SPAN_LABELS: Record<Span, string> = { day: 'Day', week: 'Week', month: 'Month' }
+
+interface PeriodSwitcherProps<T extends Span> {
+  period: T
+  onPeriodChange: (period: T) => void
+  /** Which spans to offer. Defaults to week and month. */
+  spans?: readonly T[]
   anchor: DayKey
   onAnchorChange: (anchor: DayKey) => void
   range: DayRange
@@ -16,24 +20,30 @@ interface PeriodSwitcherProps {
   className?: string
 }
 
-/** Week/Month toggle with previous/next navigation. Never goes into the future. */
-export function PeriodSwitcher({
+const DEFAULT_SPANS = ['week', 'month'] as const
+
+/** Week/Month (or Day) toggle with previous/next navigation. Never goes into the future. */
+export function PeriodSwitcher<T extends Span>({
   period,
   onPeriodChange,
+  spans = DEFAULT_SPANS as unknown as readonly T[],
   anchor,
   onAnchorChange,
   range,
   weekStartsOn,
   className,
-}: PeriodSwitcherProps) {
+}: PeriodSwitcherProps<T>) {
   const isCurrent = isCurrentPeriod(range)
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      <Tabs value={period} onValueChange={(value) => onPeriodChange(value as Period)}>
+      <Tabs value={period} onValueChange={(value) => onPeriodChange(value as T)}>
         <TabsList>
-          <TabsTrigger value="week">Week</TabsTrigger>
-          <TabsTrigger value="month">Month</TabsTrigger>
+          {spans.map((span) => (
+            <TabsTrigger key={span} value={span}>
+              {SPAN_LABELS[span]}
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
       <div className="ml-auto flex items-center">
