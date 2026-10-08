@@ -138,8 +138,9 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 ### Step 3: App shell and design system
 - Pick a visual direction: a calm lifestyle-dashboard look with one accent color per domain (workout, sleep, spending), a type scale and spacing tokens. Support light and dark mode.
 - `AppLayout`: a safe-area-aware layout (`viewport-fit=cover`, `env(safe-area-inset-*)`), a bottom tab bar (Home · Workout · Sleep · Spending) and a central **+** button that opens a **Quick Add sheet** (Workout / Sleep / Payment).
-- Router: `/`, `/workouts`, `/workouts/new`, `/workouts/:id`, `/sleep`, `/sleep/new`, `/sleep/:id`, `/spending`, `/spending/new`, `/spending/:id`, `/history`, `/insights`, `/settings`. Lazy-load the heavy routes (charts).
-- Shared components: `PageHeader`, `StatCard`, `EmptyState`, `PeriodSwitcher` (Week / Month / custom), `ConfirmDelete` (a shadcn alert-dialog, used instead of `confirm()`) and `Sheet`-based forms that feel like native bottom sheets.
+- Router: `/`, `/workouts`, `/workouts/new`, `/workouts/:id`, `/sleep`, `/sleep/new`, `/sleep/:id`, `/spending`, `/spending/new`, `/spending/:id`, `/history`, `/insights`, `/settings`. Lazy-load the heavy routes (charts). The `new` and `:id` routes are children of their list page and render as a bottom sheet over it. Closing goes back (or to the list page on a direct link).
+- Shared components: `PageHeader`, `StatCard`, `EmptyState`, `PeriodSwitcher` (Week / Month with previous/next; a custom range is deferred until a page needs it), `ConfirmDelete` (a shadcn alert-dialog, used instead of `confirm()`) and `FormSheet`, a bottom sheet for entry forms that feels native.
+- Theme: `settings.theme` is mirrored to localStorage so an inline script in `index.html` applies it before first paint.
 - Chart wrappers in `components/charts/` (`BarTrend`, `LineTrend`, `CategoryDonut`, `Heatmap`/`Calendar`) with consistent theming.
 
 **Done when:** you can navigate every route on a phone-sized viewport and the quick-add sheet opens.

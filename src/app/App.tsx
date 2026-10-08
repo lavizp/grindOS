@@ -1,8 +1,11 @@
+import { RouterProvider } from 'react-router/dom'
+import { Providers } from '@/app/providers'
+import { router } from '@/app/router'
+
 export function App() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-2 p-6">
-      <h1 className="text-3xl font-semibold tracking-tight">grindOS</h1>
-      <p className="text-sm text-muted-foreground">Workouts · Sleep · Spending</p>
-    </main>
+    <Providers>
+      <RouterProvider router={router} />
+    </Providers>
   )
 }
