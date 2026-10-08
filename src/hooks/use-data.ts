@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { repositories } from '@/db'
-import type { ID } from '@/db/schema'
+import { DEFAULT_SETTINGS, type ID } from '@/db/schema'
 import type { DayRange } from '@/lib/dates'
 
 // Live queries re-run automatically whenever the underlying tables change.
@@ -40,4 +40,13 @@ export function useExercises({ includeArchived = false } = {}) {
 
 export function useSettings() {
   return useLiveQuery(() => repositories.settings.get(), [])
+}
+
+export function useRecentMerchants(limit = 20) {
+  return useLiveQuery(() => repositories.payments.recentMerchants(limit), [limit])
+}
+
+/** The display currency. Falls back to the default while settings load. */
+export function useCurrency(): string {
+  return useSettings()?.currency ?? DEFAULT_SETTINGS.currency
 }

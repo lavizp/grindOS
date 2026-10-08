@@ -4,8 +4,10 @@ export type Domain = 'workout' | 'sleep' | 'spending'
 
 export interface DomainConfig {
   label: string
-  /** Name of a single entry, used in "Log a workout" etc. */
+  /** Name of a single entry: "workout", "payment". */
   entryLabel: string
+  /** The create action, used on every button and sheet that starts one. */
+  addLabel: string
   icon: LucideIcon
   path: string
   newPath: string
@@ -20,6 +22,7 @@ export const DOMAINS: Record<Domain, DomainConfig> = {
   workout: {
     label: 'Workout',
     entryLabel: 'workout',
+    addLabel: 'Log workout',
     icon: Dumbbell,
     path: '/workouts',
     newPath: '/workouts/new',
@@ -31,6 +34,7 @@ export const DOMAINS: Record<Domain, DomainConfig> = {
   sleep: {
     label: 'Sleep',
     entryLabel: 'sleep',
+    addLabel: 'Log sleep',
     icon: BedDouble,
     path: '/sleep',
     newPath: '/sleep/new',
@@ -42,6 +46,7 @@ export const DOMAINS: Record<Domain, DomainConfig> = {
   spending: {
     label: 'Spending',
     entryLabel: 'payment',
+    addLabel: 'Add payment',
     icon: Wallet,
     path: '/spending',
     newPath: '/spending/new',

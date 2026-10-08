@@ -8,6 +8,8 @@ import { useAppStore } from '@/stores/app-store'
  * The period selected on a page. Week/month is shared across pages (and
  * persisted); which week or month is being viewed is local to the page.
  */
+export type PeriodState = ReturnType<typeof usePeriod>
+
 export function usePeriod() {
   const period = useAppStore((s) => s.period)
   const setPeriod = useAppStore((s) => s.setPeriod)

@@ -33,7 +33,7 @@ describe('app shell', () => {
   it.each([
     ['/workouts/new', 'Log workout', 'Workout'],
     ['/sleep/abc', 'Edit sleep', 'Sleep'],
-    ['/spending/new', 'Log payment', 'Spending'],
+    ['/spending/new', 'Add payment', 'Spending'],
   ])('opens %s as a sheet over its page', async (path, title, page) => {
     renderAt(path)
     expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument()
@@ -42,7 +42,7 @@ describe('app shell', () => {
 
   it('closes an entry sheet back to its page', async () => {
     const router = renderAt('/spending/new')
-    await screen.findByRole('dialog', { name: 'Log payment' })
+    await screen.findByRole('dialog', { name: 'Add payment' })
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(router.state.location.pathname).toBe('/spending'))
   })
@@ -61,8 +61,8 @@ describe('app shell', () => {
     const sheet = await screen.findByRole('dialog', { name: 'Add entry' })
     expect(sheet).toHaveTextContent('Log workout')
     expect(sheet).toHaveTextContent('Log sleep')
-    await user.click(screen.getByRole('button', { name: /log payment/i }))
+    await user.click(screen.getByRole('button', { name: /add payment/i }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/spending/new'))
-    expect(await screen.findByRole('dialog', { name: 'Log payment' })).toBeInTheDocument()
+    expect(await screen.findByRole('dialog', { name: 'Add payment' })).toBeInTheDocument()
   })
 })

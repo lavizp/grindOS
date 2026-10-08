@@ -117,13 +117,24 @@ describe('payments', () => {
     expect(inOctober.map((p) => p.date)).toEqual(['2026-10-02'])
   })
 
-  it('returns distinct recent merchants', async () => {
-    for (const merchant of ['Momo', 'Pathao', 'momo', 'Daraz', undefined]) {
-      await ctx.repos.payments.create({ ...input, merchant })
+  it('returns distinct recent merchants with their latest category', async () => {
+    const rows: Array<[string | undefined, string]> = [
+      ['Momo', 'cat_food'],
+      ['Pathao', 'cat_transport'],
+      ['momo', 'cat_shopping'],
+      ['Daraz', 'cat_shopping'],
+      [undefined, 'cat_food'],
+    ]
+    for (const [merchant, categoryId] of rows) {
+      await ctx.repos.payments.create({ ...input, merchant, categoryId })
       ctx.clock.advance()
     }
-    expect(await ctx.repos.payments.recentMerchants()).toEqual(['Daraz', 'momo', 'Pathao'])
-    expect(await ctx.repos.payments.recentMerchants(1)).toEqual(['Daraz'])
+    expect(await ctx.repos.payments.recentMerchants()).toEqual([
+      { merchant: 'Daraz', categoryId: 'cat_shopping' },
+      { merchant: 'momo', categoryId: 'cat_shopping' },
+      { merchant: 'Pathao', categoryId: 'cat_transport' },
+    ])
+    expect(await ctx.repos.payments.recentMerchants(1)).toHaveLength(1)
   })
 })
 

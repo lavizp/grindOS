@@ -1,4 +1,5 @@
 import {
+  currencySymbol,
   currencyDecimals,
   formatMoney,
   fromMinor,
@@ -67,19 +68,30 @@ describe('parseMoneyInput', () => {
 
 describe('formatMoney', () => {
   it('drops decimals for whole amounts', () => {
-    expect(plain(formatMoney(123400, 'NPR', { locale: 'en-US' }))).toBe('NPR 1,234')
+    expect(plain(formatMoney(123400, 'NPR', { locale: 'en-US' }))).toBe('Rs 1,234')
   })
 
   it('shows full decimals for fractional amounts', () => {
-    expect(plain(formatMoney(123450, 'NPR', { locale: 'en-US' }))).toBe('NPR 1,234.50')
+    expect(plain(formatMoney(123450, 'NPR', { locale: 'en-US' }))).toBe('Rs 1,234.50')
     expect(formatMoney(1999, 'USD', { locale: 'en-US' })).toBe('$19.99')
   })
 
+  it('rounds to whole units on request', () => {
+    expect(plain(formatMoney(140760, 'NPR', { locale: 'en-US', whole: true }))).toBe('Rs 1,408')
+  })
+
   it('supports compact notation', () => {
-    expect(plain(formatMoney(4_500_000, 'NPR', { locale: 'en-US', compact: true }))).toBe('NPR 45K')
+    expect(plain(formatMoney(4_500_000, 'NPR', { locale: 'en-US', compact: true }))).toBe('Rs 45K')
   })
 
   it('formats zero-decimal currencies', () => {
     expect(formatMoney(1234, 'JPY', { locale: 'en-US' })).toBe('¥1,234')
+  })
+})
+
+describe('currencySymbol', () => {
+  it('uses the narrow symbol', () => {
+    expect(currencySymbol('NPR', 'en-US')).toBe('Rs')
+    expect(currencySymbol('USD', 'en-US')).toBe('$')
   })
 })
