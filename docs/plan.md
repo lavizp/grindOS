@@ -180,13 +180,14 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 **Tests:** calculations (PR detection, e1RM, streaks across week boundaries) and component tests for the set editor and the rest of the logging flow.
 
 ### Step 7: Dashboard
-- Today card: workout done or not (with a quick log button), last night's sleep with a quality dot, and today's spending compared with the daily average.
-- This week: workouts so far against your usual count, average sleep, and spending against last week.
-- Month spending snapshot (total, top category, mini trend).
-- The top 2–3 insights from Step 9, with a link to all of them.
-- Quick-action buttons: Log workout / Log sleep / Add payment.
-- Backup nudge if `lastBackupAt` is older than 14 days.
+- Quick-action buttons at the top: Log workout / Log sleep / Add payment.
+- Today card: today's workout (or "Not yet"), last night's sleep with a quality dot, and today's spending compared with a usual day (the average of the previous 30 days). Each row opens the entry, or the form to log one.
+- This week: workouts so far against your usual count (the average of the previous 4 full weeks), average sleep, and spending against last week (like-for-like).
+- Month spending snapshot: total, top category, and a sparkline of each day so far. It's drawn without Recharts so the dashboard stays in the main bundle without pulling charts in.
+- Backup nudge if `lastBackupAt` is older than 14 days, or, if there's never been a backup, if the first entry is. It links to Settings, where export arrives in Step 10.
+- The top 2–3 insights, with a link to all of them, are added in Step 9 along with the insights engine.
 - Prioritize clarity: about 5 cards, each with one key number.
+- `lib/calculations/dashboard.ts`: `getUsualWeeklyWorkouts`, `getTypicalDailySpending`, `needsBackup`, `daysSinceBackup`.
 
 ### Step 8: History
 - A unified timeline across all three domains, grouped by day.

@@ -241,6 +241,13 @@ describe('workouts', () => {
       '2026-10-05',
     ])
   })
+
+  it('knows the earliest date logged', async () => {
+    expect(await ctx.repos.workouts.earliestDate()).toBeUndefined()
+    await ctx.repos.workouts.create({ ...push, date: '2026-10-07' })
+    await ctx.repos.workouts.create({ ...push, date: '2026-09-30' })
+    expect(await ctx.repos.workouts.earliestDate()).toBe('2026-09-30')
+  })
 })
 
 describe('exercises', () => {

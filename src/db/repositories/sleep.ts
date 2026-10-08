@@ -24,6 +24,10 @@ export function createSleepRepository(db: GrindDB, deps: RepoDeps): SleepReposit
   return {
     ...crud,
 
+    async earliestDate() {
+      return (await db.sleep.orderBy('date').first())?.date
+    },
+
     async listByRange(range) {
       const rows = await db.sleep
         .where('date')
