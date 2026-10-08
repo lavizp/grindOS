@@ -16,6 +16,7 @@ import {
   useSleepEntries,
   useWorkouts,
 } from '@/hooks/use-data'
+import { InstallHint } from '@/features/dashboard/install-hint'
 import { InsightList } from '@/features/insights/insight-list'
 import { useInsights } from '@/features/insights/use-insights'
 import { qualityLevel } from '@/features/sleep/quality'
@@ -140,6 +141,7 @@ export function DashboardPage() {
         <PageSkeleton />
       ) : (
         <div className="mt-4 flex flex-col gap-4">
+          <InstallHint />
           {needsBackup(settings.lastBackupAt, firstLoggedDay, now) && (
             <BackupNudge days={daysSinceBackup(settings.lastBackupAt, now)} />
           )}

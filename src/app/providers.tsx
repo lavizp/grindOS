@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { UpdatePrompt } from '@/app/update-prompt'
 import { Toaster } from '@/components/ui/sonner'
 import { useThemeSync } from '@/hooks/use-theme'
 
@@ -8,6 +9,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
+      <UpdatePrompt />
       <Toaster
         theme={theme}
         position="top-center"

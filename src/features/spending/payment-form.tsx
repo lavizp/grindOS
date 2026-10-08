@@ -25,7 +25,7 @@ interface PaymentFormProps {
 const MAX_SUGGESTIONS = 6
 
 const chip =
-  'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring'
+  'touch-target relative inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-[color,background-color,scale] outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]'
 const chipIdle = 'border-border bg-card text-foreground hover:bg-muted'
 const chipActive = 'border-transparent bg-foreground text-background'
 

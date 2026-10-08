@@ -220,15 +220,15 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 **Tests:** export → import round-trip produces identical data, invalid files are rejected, merge conflict resolution works, a failed import changes nothing, plus the settings page and both managers.
 
 ### Step 11: PWA and iOS polish
-- `vite-plugin-pwa` (`generateSW`, `registerType: 'prompt'`): precache the app shell and assets, with `navigateFallback` set to `index.html`. The "Update available → Reload" toast prevents stale versions.
-- Manifest: name, short_name, `display: standalone`, theme and background colors, and icons (192, 512, maskable).
+- `vite-plugin-pwa` (`generateSW`, `registerType: 'prompt'`): precache the app shell, every lazily loaded page and the Latin font subsets, with `navigateFallback` set to `index.html`. A "new version is ready → Reload" toast prevents stale versions without ever reloading mid-form, and an open app checks for updates hourly. `workbox-window` is a direct dependency (pnpm doesn't hoist the plugin's).
+- Manifest: name, short_name, description, `display: standalone`, portrait, theme and background colors, and icons (192, 512, maskable 512). The icon is three rising bars in the workout, sleep and spending colors on ink; sources live in `assets/icon/` and the PNGs are rendered from them.
 - iOS specifics:
-  - `apple-touch-icon`, `apple-mobile-web-app-capable`, status bar style and (optionally) splash images.
-  - On iOS, show an "Add to Home Screen" how-to card when the app isn't running standalone (iOS has no install prompt).
-  - Prevent the input-zoom issue (16px minimum font size on inputs) and disable overscroll bounce where it looks wrong.
-  - Haptic-like press states and 44pt minimum touch targets.
-- Offline verification: Lighthouse PWA audit, airplane-mode testing of every feature, and a cold start offline.
-- Deploy to **Vercel**: connect the Git repo (Vite preset, `pnpm build`, output `dist`). Add a `vercel.json` SPA rewrite to `/index.html`, and set `Cache-Control: no-cache` for `sw.js` and `index.html` so updates reach the phone. Then install it on the iPhone.
+  - `apple-touch-icon` (180, full-bleed so iOS rounds it), `apple-mobile-web-app-capable`, `default` status bar style and the home-screen title. No splash images.
+  - On iOS, the dashboard shows an "Add to Home Screen" how-to card when the app isn't running standalone (iOS has no install prompt). It explains that installing also protects the data, and can be dismissed for good.
+  - The input-zoom fix (16px minimum on inputs) and `overscroll-behavior-y: none` were already in place from Step 3.
+  - Press states: buttons and chips shrink slightly when pressed. 44pt minimum touch targets come from a `touch-target` utility that enlarges the tap area of buttons, tabs and chips without changing how they look.
+- Offline verification: a headless Chrome script against the production build checks that the service worker controls the page, the manifest and icons are served, every route loads with the network off, a payment added offline survives a reload, and a cold start in a new offline tab works. (Lighthouse no longer has a PWA audit.) Still to do on a real iPhone: install from Safari and check standalone mode, the status bar and the share sheet for backups.
+- Deploy to **Vercel**: `vercel.json` sets the Vite build, an SPA rewrite to `/index.html`, `Cache-Control: no-cache` for `sw.js`, `index.html` and the manifest so updates reach the phone, and long-term caching for hashed assets. Connecting the repo to a Vercel project and installing on the iPhone are left for the owner.
 
 ### Step 12: QA and finishing
 - Seed script with about 90 days of realistic fake data (dev only) to check that charts and insights look right.
