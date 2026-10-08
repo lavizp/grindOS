@@ -162,6 +162,23 @@
   }
 }
 
+/*
+ * At least a 44×44pt tap area (Apple's minimum) without changing how a control
+ * looks: an invisible ::before grows past small controls. Needs a positioned
+ * element, so pair it with `relative` (or `absolute`).
+ */
+@utility touch-target {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
 @layer utilities {
   .tabular {
     font-variant-numeric: tabular-nums;
