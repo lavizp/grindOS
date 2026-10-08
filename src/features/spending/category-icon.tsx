@@ -6,11 +6,13 @@ interface CategoryIconProps {
   icon: string
   color: string
   /** Tile size; the glyph scales with it. */
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   className?: string
 }
 
 const SIZES = {
+  /** Fits inside a chip. */
+  xs: { tile: 'size-6 rounded-full', glyph: 'size-3.5' },
   sm: { tile: 'size-8 rounded-lg', glyph: 'size-4' },
   md: { tile: 'size-10 rounded-xl', glyph: 'size-5' },
   lg: { tile: 'size-12 rounded-xl', glyph: 'size-6' },

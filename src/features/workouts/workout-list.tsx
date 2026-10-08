@@ -7,15 +7,17 @@ import { formatDuration, formatRelativeDay } from '@/lib/formatters'
 interface WorkoutRowProps {
   workout: Workout
   exercises: Map<ID, Exercise>
+  /** Leave the date out, e.g. in lists already grouped by day. */
+  showDate?: boolean
 }
 
-export function WorkoutRow({ workout, exercises }: WorkoutRowProps) {
+export function WorkoutRow({ workout, exercises, showDate = true }: WorkoutRowProps) {
   const names = workout.entries
     .map((e) => exercises.get(e.exerciseId)?.name)
     .filter((n): n is string => !!n)
   const sets = countSets(workout)
   const details = [
-    formatRelativeDay(workout.date),
+    showDate ? formatRelativeDay(workout.date) : undefined,
     names.length > 0 ? [...new Set(names)].join(', ') : workout.notes,
   ].filter(Boolean)
 

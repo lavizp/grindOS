@@ -190,10 +190,11 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 - `lib/calculations/dashboard.ts`: `getUsualWeeklyWorkouts`, `getTypicalDailySpending`, `needsBackup`, `daysSinceBackup`.
 
 ### Step 8: History
-- A unified timeline across all three domains, grouped by day.
-- Filters: type (workout, sleep, payment), category (for payments), and period (Day, Week, Month, with previous/next navigation). Filter state lives in Zustand.
-- Every row is tappable to edit, and you can delete from the edit view.
-- Virtualize the list only if performance requires it (it probably won't at personal scale).
+- A unified timeline across all three domains, grouped by day (newest first), with each day's spending total. Within a day, entries are ordered by time: workout start, wake time, or when a payment was entered.
+- Filters: type (workout, sleep, payment), category (for payments; it narrows payments without hiding the other types, and is hidden when payments are), and period (Day, Week, Month, with previous/next navigation). Filter state, including the period, lives in Zustand. When filters hide anything, a line above the list says so, with "Show everything".
+- Every row is tappable to edit, and you can delete from the edit view. Closing the sheet returns to History, not to the entry's own page.
+- Virtualize the list only if performance requires it (it probably won't at personal scale). Not needed so far.
+- `features/history/timeline.ts`: `buildTimeline` (pure, tested).
 
 ### Step 9: Insights engine
 - `lib/calculations/insights.ts`: each generator is a pure function `(data, now, settings) => Insight[]`, where `Insight = { id, domain, severity: 'positive'|'neutral'|'warning', priority, title, detail? }`.

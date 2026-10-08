@@ -27,4 +27,24 @@ describe('app store', () => {
     expect(stored.state).toMatchObject({ period: 'month' })
     expect(stored.state).not.toHaveProperty('setPeriod')
   })
+
+  it('sets the history span', () => {
+    useAppStore.getState().setHistorySpan('day')
+    expect(useAppStore.getState().historyFilters).toMatchObject({ span: 'day' })
+  })
+
+  it('fills in the history span when upgrading saved v1 state', async () => {
+    localStorage.setItem(
+      'grindos-ui',
+      JSON.stringify({
+        state: { period: 'month', historyFilters: { types: ['sleep'], categoryId: null } },
+        version: 1,
+      }),
+    )
+    await useAppStore.persist.rehydrate()
+    expect(useAppStore.getState()).toMatchObject({
+      period: 'month',
+      historyFilters: { span: 'week', types: ['sleep'], categoryId: null },
+    })
+  })
 })

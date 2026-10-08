@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { ChevronLeft } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +16,8 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, backTo, actions, className }: PageHeaderProps) {
   const navigate = useNavigate()
+  // The first location of a session has the key "default": there's nothing to go back to.
+  const { key } = useLocation()
 
   return (
     <header className={cn('mb-6 flex items-end gap-3', className)}>
@@ -25,7 +27,7 @@ export function PageHeader({ title, subtitle, backTo, actions, className }: Page
             variant="ghost"
             size="sm"
             className="mb-1 -ml-2 text-muted-foreground"
-            onClick={() => (window.history.state?.idx > 0 ? navigate(-1) : navigate(backTo))}
+            onClick={() => (key !== 'default' ? navigate(-1) : navigate(backTo))}
           >
             <ChevronLeft data-icon="inline-start" aria-hidden />
             Back

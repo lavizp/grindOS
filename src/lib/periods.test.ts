@@ -57,3 +57,19 @@ describe('formatPeriodLabel', () => {
     expect(formatPeriodLabel('month', month('2025-12-02'), today)).toBe('December 2025')
   })
 })
+
+describe('single days', () => {
+  it('ranges over and steps by one day', () => {
+    expect(periodRange('day', today, 0)).toEqual({ start: today, end: today })
+    expect(shiftAnchor('day', today, -1)).toBe('2026-10-07')
+    expect(shiftAnchor('day', '2026-10-31', 1)).toBe('2026-11-01')
+  })
+
+  it('names the day', () => {
+    const day = (d: string) => formatPeriodLabel('day', { start: d, end: d }, today)
+    expect(day(today)).toBe('Today')
+    expect(day('2026-10-07')).toBe('Yesterday')
+    expect(day('2026-10-05')).toBe('Mon, Oct 5')
+    expect(day('2025-12-31')).toBe('Dec 31, 2025')
+  })
+})
