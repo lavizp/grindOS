@@ -28,10 +28,10 @@ describe('preferences', () => {
   it('saves each preference as it changes', async () => {
     const user = renderSettings()
     await user.selectOptions(await screen.findByLabelText('Currency'), 'USD')
-    await user.click(screen.getByRole('tab', { name: 'lb' }))
-    await user.click(screen.getByRole('tab', { name: 'Monday' }))
+    await user.click(screen.getByRole('radio', { name: 'lb' }))
+    await user.click(screen.getByRole('radio', { name: 'Monday' }))
     await user.selectOptions(screen.getByLabelText('Sleep target'), '450')
-    await user.click(screen.getByRole('tab', { name: 'Dark' }))
+    await user.click(screen.getByRole('radio', { name: 'Dark' }))
 
     await waitFor(async () =>
       expect(await repositories.settings.get()).toMatchObject({

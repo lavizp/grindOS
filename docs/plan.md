@@ -231,11 +231,16 @@ Each step ends in a working, committable state. Steps 3–5 are vertical slices 
 - Deploy to **Vercel**: `vercel.json` sets the Vite build, an SPA rewrite to `/index.html`, `Cache-Control: no-cache` for `sw.js`, `index.html` and the manifest so updates reach the phone, and long-term caching for hashed assets. Connecting the repo to a Vercel project and installing on the iPhone are left for the owner.
 
 ### Step 12: QA and finishing
-- Seed script with about 90 days of realistic fake data (dev only) to check that charts and insights look right.
-- Accessibility pass: labels, focus order, color contrast, and reduced-motion support.
-- Performance: route-level code splitting, Recharts loaded lazily, and a bundle size check.
-- Empty states and first-run onboarding (confirm the currency, NPR by default, then you're done).
-- README with setup, how to deploy and the backup instructions.
+- Demo data (`src/dev/demo-data.ts`, development only): about 90 days of realistic workouts with progressive overload, sleep with later weekends, everyday spending and monthly bills. It's deterministic for a seed, written through the repositories so it's validated like real entries, and loaded from **Settings → Development** in dev builds; production builds don't include it.
+- Accessibility pass:
+  - axe runs on all 13 screens (pages and entry sheets) in the test suite, for names, labels, roles and ARIA. A second axe run in real Chrome, with color contrast, was clean on every screen in light and dark.
+  - Contrast: the light-mode spending, sleep and destructive colors were darkened to reach 4.5:1 on cards, the page and their tints, and destructive button text on its tint is darker still.
+  - Switches that aren't tabs (Week/Month, kg/lb, theme, week start, exercise type) became a `SegmentedControl` (a Radix toggle group) instead of tabs without panels. The loading skeleton is a proper status.
+  - Reduced motion: with Reduce Motion on, animations and transitions are instant.
+  - Focus order comes from the DOM and Radix's focus trapping in sheets and dialogs.
+- Performance: route-level code splitting and lazy Recharts were already in place. `pnpm size` checks startup JS (budget 230 kB gzipped; currently about 220) and the largest lazy chunk (budget 130 kB; the charts, about 110).
+- Empty states were added with each page. First-run onboarding: a fresh install opens to a welcome on Home to confirm the currency (NPR by default) and weight unit, then Get started; Restore from a backup goes to Settings. Anyone who already has data skips it. `settings.onboardedAt` records it.
+- README with setup, development, demo data, deploying, installing on iPhone and the backup instructions.
 
 ---
 

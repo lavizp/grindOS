@@ -62,7 +62,7 @@
 }
 
 :root {
-  /* Cool paper and ink. */
+  /* Cool paper and ink. Accents are dark enough for 4.5:1 text on card, page and their soft tint. */
   --background: #f4f5f7;
   --foreground: #15171c;
   --card: #ffffff;
@@ -77,16 +77,16 @@
   --muted-foreground: #626a78;
   --accent: #e9ebef;
   --accent-foreground: #15171c;
-  --destructive: #d92d20;
+  --destructive: #d52c1f;
   --border: #e1e4e9;
   --input: #d7dbe2;
   --ring: #8a93a3;
 
   --workout: #2f5bea;
   --workout-soft: #e6ecfd;
-  --sleep: #7c5cdb;
+  --sleep: #7452d9;
   --sleep-soft: #efeafb;
-  --spending: #0e9f7e;
+  --spending: #0b7c62;
   --spending-soft: #e2f4ef;
   --on-accent: #ffffff;
 
@@ -153,6 +153,17 @@
   h2,
   h3 {
     @apply font-heading;
+  }
+  /* Honor Reduce Motion: sheets, dialogs and press effects change instantly. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
   /* iOS zooms into inputs below 16px. */
   input,

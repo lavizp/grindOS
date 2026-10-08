@@ -6,7 +6,7 @@ import { FormSheet } from '@/components/common/form-sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SegmentedControl } from '@/components/common/segmented-control'
 import { repositories } from '@/db'
 import { DuplicateRecordError } from '@/db/repositories'
 import type { Exercise, ExerciseKind } from '@/db/schema'
@@ -144,12 +144,15 @@ function ExerciseForm({ exercise, others, usage, onDone }: ExerciseFormProps) {
         <span id="kind-label" className="mb-2 block text-sm font-medium">
           Type
         </span>
-        <Tabs value={kind} onValueChange={(value) => setKind(value as ExerciseKind)}>
-          <TabsList aria-labelledby="kind-label">
-            <TabsTrigger value="weighted">With weights</TabsTrigger>
-            <TabsTrigger value="bodyweight">Bodyweight</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <SegmentedControl<ExerciseKind>
+          aria-labelledby="kind-label"
+          value={kind}
+          onValueChange={setKind}
+          options={[
+            { value: 'weighted', label: 'With weights' },
+            { value: 'bodyweight', label: 'Bodyweight' },
+          ]}
+        />
       </div>
 
       <fieldset className="rounded-2xl bg-muted/60 p-3">

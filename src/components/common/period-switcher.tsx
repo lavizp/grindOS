@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SegmentedControl } from '@/components/common/segmented-control'
 import { cn } from '@/lib/utils'
 import type { DayKey, DayRange, WeekStart } from '@/lib/dates'
 import { formatPeriodLabel, isCurrentPeriod, shiftAnchor } from '@/lib/periods'
@@ -37,15 +37,12 @@ export function PeriodSwitcher<T extends Span>({
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      <Tabs value={period} onValueChange={(value) => onPeriodChange(value as T)}>
-        <TabsList>
-          {spans.map((span) => (
-            <TabsTrigger key={span} value={span}>
-              {SPAN_LABELS[span]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <SegmentedControl
+        aria-label="Period"
+        value={period}
+        onValueChange={onPeriodChange}
+        options={spans.map((span) => ({ value: span, label: SPAN_LABELS[span] }))}
+      />
       <div className="ml-auto flex items-center">
         <Button
           variant="ghost"

@@ -2,12 +2,17 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { routes } from '@/app/router'
+import { repositories } from '@/db'
 
 function renderAt(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   render(<RouterProvider router={router} />)
   return router
 }
+
+beforeEach(async () => {
+  await repositories.settings.update({ onboardedAt: 1 })
+})
 
 describe('app shell', () => {
   it.each([

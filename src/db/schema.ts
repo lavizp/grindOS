@@ -141,6 +141,8 @@ export const settingsSchema = z.object({
   theme: themeSchema,
   sleepTargetMin: z.number().int().min(60).max(1440),
   lastBackupAt: z.number().int().nonnegative().optional(),
+  /** When the first-run welcome was completed. */
+  onboardedAt: z.number().int().nonnegative().optional(),
 })
 
 export const DEFAULT_SETTINGS: Settings = {

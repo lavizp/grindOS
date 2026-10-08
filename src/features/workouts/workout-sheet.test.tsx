@@ -131,11 +131,19 @@ describe('workout sheet', () => {
   })
 
   it('reorders and removes exercises', async () => {
+    // Start from three exercises in one tap; adding them is covered above.
+    await repositories.workouts.create({
+      date: addDaysToKey(today, -2),
+      name: 'Push',
+      unit: 'kg',
+      entries: ['ex_bench_press', 'ex_dips', 'ex_overhead_press'].map((exerciseId) => ({
+        exerciseId,
+        sets: [{ reps: 8 }],
+      })),
+    })
     const { user } = renderAt('/workouts/new')
-    await user.type(await screen.findByLabelText('Workout'), 'Push')
-    await pickExercise(user, 'bench', 'Bench Press')
-    await pickExercise(user, 'dip', 'Dips')
-    await pickExercise(user, 'overhead', 'Overhead Press')
+    await user.click(await screen.findByRole('button', { name: 'Push' }))
+    await user.click(screen.getByRole('button', { name: /Repeat last Push/ }))
 
     await user.click(screen.getByRole('button', { name: 'Move Dips up' }))
     await user.click(screen.getByRole('button', { name: 'Remove Overhead Press' }))

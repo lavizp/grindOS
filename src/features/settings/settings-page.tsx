@@ -1,9 +1,9 @@
-import { useMemo } from 'react'
+import { lazy, Suspense, useMemo } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { Link } from 'react-router'
 import { PageHeader } from '@/components/common/page-header'
 import { PageSkeleton } from '@/components/common/page-skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SegmentedControl } from '@/components/common/segmented-control'
 import { repositories } from '@/db'
 import type { Theme, WeightUnit } from '@/db/schema'
 import { useCategories, useExercises, useSettings } from '@/hooks/use-data'
@@ -18,6 +18,11 @@ const THEMES: Array<{ value: Theme; label: string }> = [
   { value: 'light', label: 'Light' },
   { value: 'dark', label: 'Dark' },
 ]
+
+// Never part of a production build.
+const DemoDataSection = import.meta.env.DEV
+  ? lazy(() => import('@/dev/demo-data-section').then((m) => ({ default: m.DemoDataSection })))
+  : () => null
 
 const select =
   'h-10 max-w-48 rounded-xl border bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -68,27 +73,27 @@ export function SettingsPage() {
             labelId="unit-label"
             hint="For new workouts. Logged ones keep theirs."
           >
-            <Tabs
+            <SegmentedControl<WeightUnit>
+              aria-labelledby="unit-label"
               value={settings.weightUnit}
-              onValueChange={(unit) => save({ weightUnit: unit as WeightUnit })}
-            >
-              <TabsList aria-labelledby="unit-label">
-                <TabsTrigger value="kg">kg</TabsTrigger>
-                <TabsTrigger value="lb">lb</TabsTrigger>
-              </TabsList>
-            </Tabs>
+              onValueChange={(weightUnit) => save({ weightUnit })}
+              options={[
+                { value: 'kg', label: 'kg' },
+                { value: 'lb', label: 'lb' },
+              ]}
+            />
           </SettingsRow>
 
           <SettingsRow label="Week starts on" labelId="week-label">
-            <Tabs
+            <SegmentedControl
+              aria-labelledby="week-label"
               value={String(settings.weekStartsOn)}
               onValueChange={(day) => save({ weekStartsOn: Number(day) as 0 | 1 })}
-            >
-              <TabsList aria-labelledby="week-label">
-                <TabsTrigger value="0">Sunday</TabsTrigger>
-                <TabsTrigger value="1">Monday</TabsTrigger>
-              </TabsList>
-            </Tabs>
+              options={[
+                { value: '0', label: 'Sunday' },
+                { value: '1', label: 'Monday' },
+              ]}
+            />
           </SettingsRow>
 
           <SettingsRow label="Sleep target" htmlFor="sleep-target">
@@ -107,15 +112,12 @@ export function SettingsPage() {
           </SettingsRow>
 
           <SettingsRow label="Appearance" labelId="theme-label">
-            <Tabs value={settings.theme} onValueChange={(theme) => save({ theme: theme as Theme })}>
-              <TabsList aria-labelledby="theme-label">
-                {THEMES.map(({ value, label }) => (
-                  <TabsTrigger key={value} value={value}>
-                    {label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+            <SegmentedControl<Theme>
+              aria-labelledby="theme-label"
+              value={settings.theme}
+              onValueChange={(theme) => save({ theme })}
+              options={THEMES}
+            />
           </SettingsRow>
         </section>
 
@@ -130,6 +132,11 @@ export function SettingsPage() {
 
         <BackupSection lastBackupAt={settings.lastBackupAt} />
         <DeleteAllSection />
+        {import.meta.env.DEV && (
+          <Suspense fallback={null}>
+            <DemoDataSection />
+          </Suspense>
+        )}
       </div>
     </>
   )
