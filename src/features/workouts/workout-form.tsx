@@ -331,8 +331,9 @@ export function WorkoutForm({
             <FieldError id="date-error" message={errors.date?.message} />
           </fieldset>
 
+          {/* iOS gives time inputs a native minimum width unless their appearance is reset. */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="min-w-0">
               <Label htmlFor="start-time" className="mb-2">
                 Started at
               </Label>
@@ -340,12 +341,12 @@ export function WorkoutForm({
                 id="start-time"
                 type="time"
                 aria-invalid={!!errors.startTime}
-                className="tabular h-11 w-full min-w-0 rounded-xl border bg-card px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="tabular h-11 w-full min-w-0 appearance-none rounded-xl border bg-card px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-date-and-time-value]:text-left"
                 {...register('startTime')}
               />
               <FieldError id="start-error" message={errors.startTime?.message} />
             </div>
-            <div>
+            <div className="min-w-0">
               <Label htmlFor="duration" className="mb-2">
                 Minutes
               </Label>
