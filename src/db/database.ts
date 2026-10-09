@@ -1,6 +1,14 @@
 import Dexie, { type Table } from 'dexie'
 import { DEFAULT_SETTINGS } from '@/db/schema'
-import type { Category, Exercise, Payment, Settings, Sleep, Workout } from '@/db/schema'
+import type {
+  Category,
+  Exercise,
+  Payment,
+  Settings,
+  Sleep,
+  Workout,
+  WorkoutTemplate,
+} from '@/db/schema'
 import { buildSeedCategories, buildSeedExercises } from '@/db/seed'
 
 export const DEFAULT_DB_NAME = 'grindos'
@@ -12,6 +20,7 @@ export class GrindDB extends Dexie {
   exercises!: Table<Exercise, string>
   categories!: Table<Category, string>
   settings!: Table<Settings, string>
+  templates!: Table<WorkoutTemplate, string>
 
   constructor(name = DEFAULT_DB_NAME) {
     super(name)
@@ -24,6 +33,10 @@ export class GrindDB extends Dexie {
       exercises: 'id, &nameKey, updatedAt',
       categories: 'id, order, updatedAt',
       settings: 'id',
+    })
+    // Templates start empty: they're the user's own routines.
+    this.version(2).stores({
+      templates: 'id, &nameKey, updatedAt',
     })
 
     this.on('populate', async (tx) => {

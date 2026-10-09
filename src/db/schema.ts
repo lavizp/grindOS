@@ -70,6 +70,20 @@ export const workoutSchema = workoutInputSchema.extend({
   exerciseIds: z.array(id),
 })
 
+// Workout templates: a saved routine, e.g. "Push" with its exercises and sets
+
+export const templateInputSchema = z.object({
+  name: requiredText(60),
+  unit: weightUnitSchema,
+  entries: z.array(workoutEntrySchema),
+})
+
+export const templateSchema = templateInputSchema.extend({
+  ...meta,
+  /** Lower-cased name, unique-indexed for case-insensitive uniqueness. */
+  nameKey: z.string().min(1),
+})
+
 // Sleep
 
 const sleepFields = z.object({
@@ -168,6 +182,8 @@ export type WorkoutSet = z.infer<typeof workoutSetSchema>
 export type WorkoutEntry = z.infer<typeof workoutEntrySchema>
 export type Workout = z.infer<typeof workoutSchema>
 export type WorkoutInput = z.input<typeof workoutInputSchema>
+export type WorkoutTemplate = z.infer<typeof templateSchema>
+export type WorkoutTemplateInput = z.input<typeof templateInputSchema>
 export type Sleep = z.infer<typeof sleepSchema>
 export type SleepInput = z.input<typeof sleepInputSchema>
 export type Category = z.infer<typeof categorySchema>

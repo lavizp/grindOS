@@ -18,7 +18,7 @@ export interface ExerciseRepository extends CrudRepository<Exercise, ExerciseInp
   /** Returns the exercise with this name (case-insensitive), creating it if needed. */
   findOrCreate(name: string, kind?: ExerciseKind): Promise<Exercise>
   /**
-   * Moves every workout entry from `sourceId` to `targetId`, then deletes the
+   * Moves every workout and template entry from `sourceId` to `targetId`, then deletes the
    * source. For tidying up duplicates. Returns how many workouts changed.
    */
   merge(sourceId: ID, targetId: ID): Promise<number>
@@ -55,7 +55,7 @@ export function createExerciseRepository(db: GrindDB, deps: RepoDeps): ExerciseR
 
     async merge(sourceId, targetId) {
       if (sourceId === targetId) throw new Error('Can’t merge an exercise into itself')
-      return db.transaction('rw', [db.exercises, db.workouts], async () => {
+      return db.transaction('rw', [db.exercises, db.workouts, db.templates], async () => {
         if (!(await db.exercises.get(sourceId))) throw new RecordNotFoundError('Exercise', sourceId)
         if (!(await db.exercises.get(targetId))) throw new RecordNotFoundError('Exercise', targetId)
         const workouts = await db.workouts.where('exerciseIds').equals(sourceId).toArray()
@@ -69,6 +69,14 @@ export function createExerciseRepository(db: GrindDB, deps: RepoDeps): ExerciseR
             updatedAt: Math.max(now, workout.updatedAt),
           })
         }
+        // Templates aren't indexed by exercise, and there are only a handful.
+        await db.templates.toCollection().modify((template) => {
+          if (!template.entries.some((e) => e.exerciseId === sourceId)) return
+          template.entries = template.entries.map((e) =>
+            e.exerciseId === sourceId ? { ...e, exerciseId: targetId } : e,
+          )
+          template.updatedAt = Math.max(now, template.updatedAt)
+        })
         await db.exercises.delete(sourceId)
         return workouts.length
       })

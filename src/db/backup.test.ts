@@ -33,6 +33,11 @@ async function populated() {
     quality: 4,
   })
   await repos.payments.create({ date: '2026-10-06', amountMinor: 450, categoryId: category.id })
+  await repos.templates.create({
+    name: 'Legs',
+    unit: 'lb',
+    entries: [{ exerciseId: exercise.id, sets: [{ reps: 5, weight: 185 }] }],
+  })
   return ctx
 }
 
@@ -47,7 +52,7 @@ describe('export and import', () => {
   it('round-trips through JSON into an empty database unchanged', async () => {
     const source = await populated()
     const backup = await exportBackup(source.db, 5000)
-    expect(backup).toMatchObject({ app: 'grindOS', schemaVersion: 1, exportedAt: 5000 })
+    expect(backup).toMatchObject({ app: 'grindOS', schemaVersion: 2, exportedAt: 5000 })
 
     const parsed = parseBackup(JSON.stringify(backup))
     expect(parsed.ok).toBe(true)
@@ -60,7 +65,7 @@ describe('export and import', () => {
   it('summarizes what a backup holds', async () => {
     const { db } = await populated()
     const summary = summarizeBackup(await exportBackup(db))
-    expect(summary).toMatchObject({ workouts: 1, sleep: 1, payments: 1, settings: 1 })
+    expect(summary).toMatchObject({ workouts: 1, sleep: 1, payments: 1, settings: 1, templates: 1 })
     expect(summary.categories).toBeGreaterThan(9) // the defaults plus Coffee
   })
 
@@ -88,11 +93,19 @@ describe('parseBackup', () => {
 
   it('rejects backups from a newer version', async () => {
     const json = await validJson()
-    json.schemaVersion = 2
+    json.schemaVersion = 3
     expect(parseBackup(JSON.stringify(json))).toMatchObject({
       ok: false,
       error: expect.stringContaining('newer version'),
     })
+  })
+
+  it('reads a version 1 backup, from before templates, as having none', async () => {
+    const json = await validJson()
+    json.schemaVersion = 1
+    delete json.data.templates
+    const result = parseBackup(JSON.stringify(json))
+    expect(result.ok && result.backup.data.templates).toEqual([])
   })
 
   it('rejects damaged records, saying where', async () => {
@@ -177,6 +190,25 @@ describe('merge', () => {
     const [workout] = await local.db.workouts.toArray()
     expect(workout.entries[0].exerciseId).toBe(mine.id)
     expect(workout.exerciseIds).toEqual([mine.id])
+    const [template] = await local.db.templates.toArray()
+    expect(template.entries[0].exerciseId).toBe(mine.id)
+  })
+
+  it('keeps one template per name, the one updated last', async () => {
+    const local = createTestDb()
+    await local.repos.templates.create({ name: 'legs', unit: 'kg', entries: [] })
+    const backup = await exportBackup((await populated()).db)
+    const [theirs] = backup.data.templates
+    const newer = { ...theirs, updatedAt: theirs.updatedAt + 60_000 }
+    await importBackup(
+      local.db,
+      { ...backup, data: { ...backup.data, templates: [newer] } },
+      'merge',
+    )
+
+    const templates = await local.db.templates.toArray()
+    expect(templates).toHaveLength(1)
+    expect(templates[0]).toMatchObject({ name: 'Legs', unit: 'lb' })
   })
 
   it('keeps this device’s settings, except a newer backup date', async () => {
@@ -226,6 +258,7 @@ describe('deleteAllData', () => {
     await deleteAllData(db)
     expect(await db.workouts.count()).toBe(0)
     expect(await db.payments.count()).toBe(0)
+    expect(await db.templates.count()).toBe(0)
     expect(await repos.categories.getById('cat_food')).toBeDefined()
     expect(await repos.exercises.getByName('Zercher Squat')).toBeUndefined()
     expect(await repos.exercises.getByName('Bench Press')).toBeDefined()

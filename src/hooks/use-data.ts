@@ -38,6 +38,10 @@ export function useExercises({ includeArchived = false } = {}) {
   return useLiveQuery(() => repositories.exercises.list({ includeArchived }), [includeArchived])
 }
 
+export function useTemplates() {
+  return useLiveQuery(() => repositories.templates.list(), [])
+}
+
 export function useSettings() {
   return useLiveQuery(() => repositories.settings.get(), [])
 }

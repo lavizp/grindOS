@@ -7,10 +7,12 @@ import {
   paymentSchema,
   settingsSchema,
   sleepSchema,
+  templateSchema,
   workoutSchema,
   type ID,
   type Meta,
   type Workout,
+  type WorkoutTemplate,
 } from '@/db/schema'
 import { buildSeedCategories, buildSeedExercises } from '@/db/seed'
 import { toDayKey } from '@/lib/dates'
@@ -20,7 +22,8 @@ import { toDayKey } from '@/lib/dates'
 // file changes nothing.
 
 export const BACKUP_APP = 'grindOS'
-export const BACKUP_SCHEMA_VERSION = 1
+// Version 2 added workout templates; version 1 files import with none.
+export const BACKUP_SCHEMA_VERSION = 2
 
 export const backupSchema = z.object({
   app: z.literal(BACKUP_APP),
@@ -33,6 +36,7 @@ export const backupSchema = z.object({
     exercises: z.array(exerciseSchema),
     categories: z.array(categorySchema),
     settings: z.array(settingsSchema).max(1),
+    templates: z.array(templateSchema).default([]),
   }),
 })
 
@@ -46,7 +50,7 @@ export const ENTRY_TABLES = ['workouts', 'sleep', 'payments'] as const
 export async function exportBackup(db: GrindDB, now = Date.now()): Promise<Backup> {
   return db.transaction(
     'r',
-    [db.workouts, db.sleep, db.payments, db.exercises, db.categories, db.settings],
+    [db.workouts, db.sleep, db.payments, db.exercises, db.categories, db.settings, db.templates],
     async () => ({
       app: BACKUP_APP,
       schemaVersion: BACKUP_SCHEMA_VERSION,
@@ -58,6 +62,7 @@ export async function exportBackup(db: GrindDB, now = Date.now()): Promise<Backu
         exercises: await db.exercises.toArray(),
         categories: await db.categories.toArray(),
         settings: await db.settings.toArray(),
+        templates: await db.templates.toArray(),
       },
     }),
   )
@@ -110,6 +115,7 @@ export function summarizeBackup(backup: Backup): BackupSummary {
     exercises: data.exercises.length,
     categories: data.categories.length,
     settings: data.settings.length,
+    templates: data.templates.length,
   }
 }
 
@@ -132,7 +138,15 @@ export async function importBackup(
   backup: Backup,
   mode: ImportMode,
 ): Promise<ImportResult> {
-  const tables = [db.workouts, db.sleep, db.payments, db.exercises, db.categories, db.settings]
+  const tables = [
+    db.workouts,
+    db.sleep,
+    db.payments,
+    db.exercises,
+    db.categories,
+    db.settings,
+    db.templates,
+  ]
   return db.transaction('rw', tables, async () => {
     const { data } = backup
     if (mode === 'replace') {
@@ -142,6 +156,7 @@ export async function importBackup(
       await db.workouts.bulkAdd(data.workouts)
       await db.sleep.bulkAdd(data.sleep)
       await db.payments.bulkAdd(data.payments)
+      await db.templates.bulkAdd(data.templates)
       await db.settings.put(data.settings[0] ?? DEFAULT_SETTINGS)
       const written = Object.values(summarizeBackup(backup)).reduce((a, b) => a + b, 0)
       return { written, skipped: 0 }
@@ -171,6 +186,24 @@ async function mergeBackup(db: GrindDB, data: BackupData): Promise<ImportResult>
   await Promise.all(data.payments.map((p) => upsert(db.payments, p, result)))
   for (const workout of data.workouts) {
     await upsert(db.workouts, remapWorkout(workout, remap), result)
+  }
+
+  // Templates are unique by name: when both sides have one with the same name
+  // under different ids, the one updated last wins.
+  for (const template of data.templates) {
+    const incoming = remapTemplate(template, remap)
+    const sameName = await db.templates.where('nameKey').equals(incoming.nameKey).first()
+    if (sameName && sameName.id !== incoming.id) {
+      if (incoming.updatedAt > sameName.updatedAt) {
+        await db.templates.delete(sameName.id)
+        await db.templates.add(incoming)
+        result.written += 1
+      } else {
+        result.skipped += 1
+      }
+    } else {
+      await upsert(db.templates, incoming, result)
+    }
   }
 
   // One entry per night: when both sides logged the same night under
@@ -223,9 +256,28 @@ function remapWorkout(workout: Workout, remap: Map<ID, ID>): Workout {
   }
 }
 
+function remapTemplate(template: WorkoutTemplate, remap: Map<ID, ID>): WorkoutTemplate {
+  if (!template.entries.some((e) => remap.has(e.exerciseId))) return template
+  return {
+    ...template,
+    entries: template.entries.map((e) => ({
+      ...e,
+      exerciseId: remap.get(e.exerciseId) ?? e.exerciseId,
+    })),
+  }
+}
+
 /** Empties the app back to a fresh install: default categories, exercises and settings. */
 export async function deleteAllData(db: GrindDB, now = Date.now()): Promise<void> {
-  const tables = [db.workouts, db.sleep, db.payments, db.exercises, db.categories, db.settings]
+  const tables = [
+    db.workouts,
+    db.sleep,
+    db.payments,
+    db.exercises,
+    db.categories,
+    db.settings,
+    db.templates,
+  ]
   await db.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()))
     await db.categories.bulkAdd(buildSeedCategories(now))

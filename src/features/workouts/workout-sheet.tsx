@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Trash2 } from 'lucide-react'
+import { ClipboardList, Trash2 } from 'lucide-react'
 import { useParams } from 'react-router'
 import { toast } from 'sonner'
 import { ConfirmDelete } from '@/components/common/confirm-delete'
@@ -8,7 +8,7 @@ import { FormSheet } from '@/components/common/form-sheet'
 import { Button } from '@/components/ui/button'
 import { repositories } from '@/db'
 import type { Exercise, ID, Workout, WorkoutInput } from '@/db/schema'
-import { useExercises, useRecentWorkouts, useWeightUnit } from '@/hooks/use-data'
+import { useExercises, useRecentWorkouts, useTemplates, useWeightUnit } from '@/hooks/use-data'
 import { useCloseRoute } from '@/hooks/use-close-route'
 import { clearDraft, loadDraft, saveDraft } from '@/features/workouts/workout-draft'
 import { WORKOUT_FORM_ID, WorkoutForm } from '@/features/workouts/workout-form'
@@ -16,6 +16,7 @@ import {
   emptyWorkoutForm,
   hasProgress,
   workoutToForm,
+  toTemplateInput,
   workoutToInput,
   type WorkoutFormValues,
 } from '@/features/workouts/workout-form-schema'
@@ -28,6 +29,7 @@ export function WorkoutSheet() {
   const settingsUnit = useWeightUnit()
   const exercises = useExercises({ includeArchived: true })
   const history = useRecentWorkouts()
+  const templates = useTemplates()
   // null = not found, undefined = still loading.
   const workout = useLiveQuery(
     async () => (id ? ((await repositories.workouts.getById(id)) ?? null) : null),
@@ -40,7 +42,11 @@ export function WorkoutSheet() {
   const [saving, setSaving] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
 
-  const loading = exercises === undefined || history === undefined || workout === undefined
+  const loading =
+    exercises === undefined ||
+    history === undefined ||
+    templates === undefined ||
+    workout === undefined
   const unit = workout?.unit ?? draft?.unit ?? settingsUnit
 
   const keepDraft = useCallback(
@@ -145,10 +151,22 @@ export function WorkoutSheet() {
             exercises={exercises}
             history={history}
             editingId={workout?.id}
+            templates={templates}
             onSubmit={save}
             onValuesChange={isEdit ? undefined : keepDraft}
             createExercise={(name, kind) => repositories.exercises.findOrCreate(name, kind)}
           />
+          {workout && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void saveAsTemplate(workout)}
+              className="mt-6 h-11 w-full rounded-xl"
+            >
+              <ClipboardList data-icon="inline-start" aria-hidden />
+              Save as template
+            </Button>
+          )}
         </>
       )}
     </FormSheet>
@@ -171,6 +189,33 @@ async function update(previous: Workout, input: WorkoutInput) {
       onClick: () => void repositories.workouts.update(previous.id, workoutToInput(previous)),
     },
   })
+}
+
+/** Saves the logged workout's exercises and sets as a template, replacing one with the same name. */
+async function saveAsTemplate(workout: Workout) {
+  const values = toTemplateInput(workoutToInput(workout))
+  try {
+    const existing = await repositories.templates.getByName(workout.name)
+    if (existing) {
+      await repositories.templates.update(existing.id, values)
+      const previous = toTemplateInput(existing)
+      toast.success(`${existing.name} template updated`, {
+        action: {
+          label: 'Undo',
+          onClick: () => void repositories.templates.update(existing.id, previous),
+        },
+      })
+    } else {
+      const created = await repositories.templates.create(values)
+      toast.success(`Saved as the ${created.name} template`, {
+        action: { label: 'Undo', onClick: () => void repositories.templates.remove(created.id) },
+      })
+    }
+  } catch (error) {
+    toast.error('Couldn’t save the template', {
+      description: error instanceof Error ? error.message : undefined,
+    })
+  }
 }
 
 /** "New record: Bench Press" when a set beats every earlier one. */

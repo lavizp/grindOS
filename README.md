@@ -9,7 +9,9 @@ See [`docs/`](docs/) for the product brief, technical design and implementation 
 ## What it does
 
 - **Workouts:** log sets and reps fast, repeat your last session, and follow
-  personal records and progress for each exercise.
+  personal records and progress for each exercise. Save routines such as "Push"
+  as templates (**Settings → Workout templates**, or **Save as template** on a
+  logged workout) and start a workout from one in one tap.
 - **Sleep:** bedtime and wake time with a duration preview, quality, averages
   against your target, and how regular your bedtime is.
 - **Spending:** amount and category in about three taps, then breakdowns,

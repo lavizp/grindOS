@@ -148,6 +148,7 @@ export function BackupSection({ lastBackupAt }: { lastBackupAt: number | undefin
                   ['Nights', summary.sleep],
                   ['Payments', summary.payments],
                   ['Exercises', summary.exercises],
+                  ['Templates', summary.templates],
                   ['Categories', summary.categories],
                 ] as const
               ).map(([label, count]) => (
