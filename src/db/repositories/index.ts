@@ -1,4 +1,5 @@
 import type { GrindDB } from '@/db/database'
+import { createBodyWeightRepository } from '@/db/repositories/body-weights'
 import { createCategoryRepository } from '@/db/repositories/categories'
 import { createExerciseRepository } from '@/db/repositories/exercises'
 import { createPaymentRepository } from '@/db/repositories/payments'
@@ -17,11 +18,13 @@ export function createRepositories(db: GrindDB, deps: RepoDeps = defaultDeps) {
     categories: createCategoryRepository(db, deps),
     settings: createSettingsRepository(db),
     templates: createTemplateRepository(db, deps),
+    bodyWeights: createBodyWeightRepository(db, deps),
   }
 }
 
 export type Repositories = ReturnType<typeof createRepositories>
 
+export type { BodyWeightRepository } from '@/db/repositories/body-weights'
 export type { CategoryRepository, NewCategoryInput } from '@/db/repositories/categories'
 export type { ExerciseRepository } from '@/db/repositories/exercises'
 export type { MerchantSuggestion, PaymentRepository } from '@/db/repositories/payments'

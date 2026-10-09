@@ -15,12 +15,16 @@ export interface LineSeries {
   dataKey: string
   color: ChartColor
   name?: string
+  /** Drawn thin and faint, as context behind the main line (e.g. daily values behind an average). */
+  dimmed?: boolean
 }
 
 interface LineTrendProps<T extends { label: string }> {
   data: T[]
   series: LineSeries[]
   formatValue: (value: number) => string
+  /** Y axis labels, when `formatValue` is too long for them. Defaults to `formatValue`. */
+  formatTick?: (value: number) => string
   /** Y domain; e.g. ['dataMin - 30', 'dataMax + 30'] for times of day. */
   domain?: [number | string, number | string]
   target?: number
@@ -34,6 +38,7 @@ export function LineTrend<T extends { label: string }>({
   data,
   series,
   formatValue,
+  formatTick = formatValue,
   domain = ['auto', 'auto'],
   target,
   height = 200,
@@ -52,7 +57,7 @@ export function LineTrend<T extends { label: string }>({
             width={48}
             domain={domain}
             reversed={reversed}
-            tickFormatter={formatValue}
+            tickFormatter={formatTick}
           />
           <Tooltip
             cursor={{ stroke: 'var(--border)' }}
@@ -75,7 +80,8 @@ export function LineTrend<T extends { label: string }>({
               dataKey={s.dataKey}
               name={s.name}
               stroke={colorVar(s.color)}
-              strokeWidth={2.5}
+              strokeWidth={s.dimmed ? 1.5 : 2.5}
+              strokeOpacity={s.dimmed ? 0.35 : 1}
               dot={false}
               activeDot={{ r: 4, strokeWidth: 0 }}
               connectNulls

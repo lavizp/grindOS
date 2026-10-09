@@ -49,8 +49,8 @@ export function DeleteAllSection() {
         Delete all data
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Removes every workout, template, night and payment from this device and resets categories,
-        exercises and settings. Export a backup first if you might want them back.
+        Removes every workout, template, weigh-in, night and payment from this device and resets
+        categories, exercises and settings. Export a backup first if you might want them back.
       </p>
       <AlertDialog
         open={open}

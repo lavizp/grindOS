@@ -84,6 +84,18 @@ export const templateSchema = templateInputSchema.extend({
   nameKey: z.string().min(1),
 })
 
+// Body weight: at most one entry per day
+
+export const bodyWeightInputSchema = z.object({
+  date: dayKey,
+  /** In `unit`. */
+  weight: z.number().positive('Weight must be greater than 0').max(1000),
+  unit: weightUnitSchema,
+  notes: optionalText(500),
+})
+
+export const bodyWeightSchema = bodyWeightInputSchema.extend(meta)
+
 // Sleep
 
 const sleepFields = z.object({
@@ -184,6 +196,8 @@ export type Workout = z.infer<typeof workoutSchema>
 export type WorkoutInput = z.input<typeof workoutInputSchema>
 export type WorkoutTemplate = z.infer<typeof templateSchema>
 export type WorkoutTemplateInput = z.input<typeof templateInputSchema>
+export type BodyWeight = z.infer<typeof bodyWeightSchema>
+export type BodyWeightInput = z.input<typeof bodyWeightInputSchema>
 export type Sleep = z.infer<typeof sleepSchema>
 export type SleepInput = z.input<typeof sleepInputSchema>
 export type Category = z.infer<typeof categorySchema>

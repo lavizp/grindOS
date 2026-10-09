@@ -12,6 +12,9 @@ See [`docs/`](docs/) for the product brief, technical design and implementation 
   personal records and progress for each exercise. Save routines such as "Push"
   as templates (**Settings → Workout templates**, or **Save as template** on a
   logged workout) and start a workout from one in one tap.
+- **Body weight:** one weigh-in a day from the **+** button, with a 7-day
+  average that smooths out daily swings and your change over 30 days, 90 days, a
+  year or all time (**Workouts → Body weight**).
 - **Sleep:** bedtime and wake time with a duration preview, quality, averages
   against your target, and how regular your bedtime is.
 - **Spending:** amount and category in about three taps, then breakdowns,
@@ -60,7 +63,7 @@ pnpm size         # after a build: check startup JS against its budget
 ```
 
 **Demo data:** in development, **Settings → Development → Load demo data** adds
-about 90 days of workouts, sleep and payments, to check that charts and insights
+about 90 days of workouts, body weight, sleep and payments, to check that charts and insights
 look right. It's left out of production builds. **Delete all data** clears it.
 
 **Offline and updates:** the service worker only runs in production builds, so

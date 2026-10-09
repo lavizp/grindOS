@@ -11,9 +11,9 @@ export function DemoDataSection() {
     setLoading(true)
     try {
       const { seedDemoData } = await import('@/dev/demo-data')
-      const { workouts, nights, payments } = await seedDemoData(repositories)
+      const { workouts, nights, payments, weighIns } = await seedDemoData(repositories)
       toast.success('Demo data loaded', {
-        description: `${workouts} workouts, ${nights} nights and ${payments} payments.`,
+        description: `${workouts} workouts, ${weighIns} weigh-ins, ${nights} nights and ${payments} payments.`,
       })
     } catch (error) {
       toast.error('Couldn’t load demo data', {
@@ -30,8 +30,8 @@ export function DemoDataSection() {
         Development
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Adds about 90 days of workouts, sleep and payments. Best on an empty app; delete all data
-        afterwards to start over.
+        Adds about 90 days of workouts, body weight, sleep and payments. Best on an empty app;
+        delete all data afterwards to start over.
       </p>
       <Button
         type="button"

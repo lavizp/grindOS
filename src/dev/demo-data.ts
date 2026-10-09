@@ -15,6 +15,7 @@ export interface DemoSummary {
   workouts: number
   nights: number
   payments: number
+  weighIns: number
 }
 
 /** Small, fast, seedable PRNG (mulberry32). */
@@ -91,7 +92,9 @@ export async function seedDemoData(
   { today = todayKey(), days = 90, seed = 7 }: DemoOptions = {},
 ): Promise<DemoSummary> {
   const rng = random(seed)
-  const summary: DemoSummary = { workouts: 0, nights: 0, payments: 0 }
+  // Its own generator, so adding weigh-ins left the other demo data unchanged.
+  const scale = random(seed + 1)
+  const summary: DemoSummary = { workouts: 0, nights: 0, payments: 0, weighIns: 0 }
   const order = ['Push', 'Pull', 'Legs']
   let session = 0
 
@@ -111,6 +114,14 @@ export async function seedDemoData(
         quality: rng.chance(0.85) ? (rng.int(2, 5) as 2 | 3 | 4 | 5) : undefined,
       })
       summary.nights += 1
+    }
+
+    // Body weight: most mornings, drifting down about 3 kg with daily noise.
+    if (scale.chance(0.8)) {
+      const trend = 82 - (3 * (days - 1 - back)) / days
+      const weight = Math.round((trend + (scale.next() - 0.5) * 1.2) * 10) / 10
+      await repos.bodyWeights.create({ date, weight, unit: 'kg' })
+      summary.weighIns += 1
     }
 
     // Workouts: Mon/Wed/Fri plus the odd Saturday, rotating Push, Pull, Legs.

@@ -13,6 +13,7 @@ describe('demo data', () => {
     expect(summary.workouts).toBeGreaterThan(30)
     expect(summary.nights).toBeGreaterThan(70)
     expect(summary.payments).toBeGreaterThan(100)
+    expect(summary.weighIns).toBeGreaterThan(60)
     expect(await db.payments.count()).toBe(summary.payments)
 
     const { data } = await exportBackup(db)

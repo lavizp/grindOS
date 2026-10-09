@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie'
 import { DEFAULT_SETTINGS } from '@/db/schema'
 import type {
+  BodyWeight,
   Category,
   Exercise,
   Payment,
@@ -21,6 +22,7 @@ export class GrindDB extends Dexie {
   categories!: Table<Category, string>
   settings!: Table<Settings, string>
   templates!: Table<WorkoutTemplate, string>
+  bodyWeights!: Table<BodyWeight, string>
 
   constructor(name = DEFAULT_DB_NAME) {
     super(name)
@@ -37,6 +39,9 @@ export class GrindDB extends Dexie {
     // Templates start empty: they're the user's own routines.
     this.version(2).stores({
       templates: 'id, &nameKey, updatedAt',
+    })
+    this.version(3).stores({
+      bodyWeights: 'id, &date, updatedAt',
     })
 
     this.on('populate', async (tx) => {

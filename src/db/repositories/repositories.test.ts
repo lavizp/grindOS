@@ -396,3 +396,42 @@ describe('templates', () => {
     ).rejects.toThrow()
   })
 })
+
+describe('body weight', () => {
+  it('starts empty', async () => {
+    expect(await ctx.repos.bodyWeights.listAll()).toEqual([])
+    expect(await ctx.repos.bodyWeights.getLatest()).toBeUndefined()
+  })
+
+  it('lists newest first and finds the latest', async () => {
+    await ctx.repos.bodyWeights.create({ date: '2026-10-01', weight: 80, unit: 'kg' })
+    await ctx.repos.bodyWeights.create({ date: '2026-10-05', weight: 79.4, unit: 'kg' })
+    await ctx.repos.bodyWeights.create({ date: '2026-10-03', weight: 79.8, unit: 'kg' })
+    expect((await ctx.repos.bodyWeights.listAll()).map((b) => b.date)).toEqual([
+      '2026-10-05',
+      '2026-10-03',
+      '2026-10-01',
+    ])
+    expect((await ctx.repos.bodyWeights.getLatest())?.weight).toBe(79.4)
+    expect(await ctx.repos.bodyWeights.loggedDays()).toEqual(
+      new Map([
+        ['2026-10-01', 'id-1'],
+        ['2026-10-05', 'id-2'],
+        ['2026-10-03', 'id-3'],
+      ]),
+    )
+  })
+
+  it('allows one weigh-in per day', async () => {
+    await ctx.repos.bodyWeights.create({ date: '2026-10-01', weight: 80, unit: 'kg' })
+    await expect(
+      ctx.repos.bodyWeights.create({ date: '2026-10-01', weight: 81, unit: 'kg' }),
+    ).rejects.toThrow(DuplicateRecordError)
+  })
+
+  it('rejects a weight of zero', async () => {
+    await expect(
+      ctx.repos.bodyWeights.create({ date: '2026-10-01', weight: 0, unit: 'kg' }),
+    ).rejects.toThrow()
+  })
+})

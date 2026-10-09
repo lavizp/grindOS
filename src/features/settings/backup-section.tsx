@@ -147,6 +147,7 @@ export function BackupSection({ lastBackupAt }: { lastBackupAt: number | undefin
                   ['Workouts', summary.workouts],
                   ['Nights', summary.sleep],
                   ['Payments', summary.payments],
+                  ['Weigh-ins', summary.bodyWeights],
                   ['Exercises', summary.exercises],
                   ['Templates', summary.templates],
                   ['Categories', summary.categories],

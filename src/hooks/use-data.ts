@@ -42,6 +42,10 @@ export function useTemplates() {
   return useLiveQuery(() => repositories.templates.list(), [])
 }
 
+export function useBodyWeights() {
+  return useLiveQuery(() => repositories.bodyWeights.listAll(), [])
+}
+
 export function useSettings() {
   return useLiveQuery(() => repositories.settings.get(), [])
 }

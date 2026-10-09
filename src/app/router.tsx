@@ -13,6 +13,11 @@ const workoutSheet = () =>
 const sleepSheet = () =>
   import('@/features/sleep/sleep-sheet').then((m) => ({ Component: m.SleepSheet }))
 
+const bodyWeightSheet = () =>
+  import('@/features/body-weight/body-weight-sheet').then((m) => ({
+    Component: m.BodyWeightSheet,
+  }))
+
 const templateSheet = () =>
   import('@/features/templates/template-sheet').then((m) => ({ Component: m.TemplateSheet }))
 
@@ -40,6 +45,18 @@ export const routes: RouteObject[] = [
         path: 'workouts/exercises/:exerciseId',
         lazy: () =>
           import('@/features/workouts/exercise-page').then((m) => ({ Component: m.ExercisePage })),
+      },
+      {
+        // Static, so it outranks /workouts/:id too.
+        path: 'workouts/body-weight',
+        lazy: () =>
+          import('@/features/body-weight/body-weight-page').then((m) => ({
+            Component: m.BodyWeightPage,
+          })),
+        children: [
+          { path: 'new', lazy: bodyWeightSheet },
+          { path: ':id', lazy: bodyWeightSheet },
+        ],
       },
       {
         path: 'sleep',
