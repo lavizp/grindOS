@@ -7,6 +7,7 @@ import { SectionCard } from '@/components/common/section-card'
 import { StatCard } from '@/components/common/stat-card'
 import { useExercises, useWeightUnit, useWorkouts } from '@/hooks/use-data'
 import { usePeriod } from '@/hooks/use-period'
+import { BodyWeightCard } from '@/features/body-weight/body-weight-card'
 import { ExerciseLink, WorkoutRow } from '@/features/workouts/workout-list'
 import {
   getDailyCounts,
@@ -55,11 +56,14 @@ export function WorkoutsPage() {
   if (allWorkouts.length === 0) {
     return (
       <DomainPage domain="workout" period={period}>
-        <DomainEmptyState
-          domain="workout"
-          title="No workouts yet"
-          description="Log your sets and reps. Streaks, progress and records show up here."
-        />
+        <div className="flex flex-col gap-4">
+          <DomainEmptyState
+            domain="workout"
+            title="No workouts yet"
+            description="Log your sets and reps. Streaks, progress and records show up here."
+          />
+          <BodyWeightCard />
+        </div>
       </DomainPage>
     )
   }
@@ -98,6 +102,8 @@ export function WorkoutsPage() {
             </div>
           </dl>
         </StatCard>
+
+        <BodyWeightCard />
 
         <SectionCard title={`Last ${HEATMAP_WEEKS} weeks`}>
           <CalendarHeatmap

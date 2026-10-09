@@ -1,6 +1,8 @@
+import type { Table } from 'dexie'
 import { z } from 'zod'
 import type { GrindDB } from '@/db/database'
 import {
+  bodyWeightSchema,
   categorySchema,
   DEFAULT_SETTINGS,
   exerciseSchema,
@@ -22,8 +24,8 @@ import { toDayKey } from '@/lib/dates'
 // file changes nothing.
 
 export const BACKUP_APP = 'grindOS'
-// Version 2 added workout templates; version 1 files import with none.
-export const BACKUP_SCHEMA_VERSION = 2
+// Version 2 added workout templates and version 3 body weight; older files import with none.
+export const BACKUP_SCHEMA_VERSION = 3
 
 export const backupSchema = z.object({
   app: z.literal(BACKUP_APP),
@@ -37,6 +39,7 @@ export const backupSchema = z.object({
     categories: z.array(categorySchema),
     settings: z.array(settingsSchema).max(1),
     templates: z.array(templateSchema).default([]),
+    bodyWeights: z.array(bodyWeightSchema).default([]),
   }),
 })
 
@@ -50,7 +53,16 @@ export const ENTRY_TABLES = ['workouts', 'sleep', 'payments'] as const
 export async function exportBackup(db: GrindDB, now = Date.now()): Promise<Backup> {
   return db.transaction(
     'r',
-    [db.workouts, db.sleep, db.payments, db.exercises, db.categories, db.settings, db.templates],
+    [
+      db.workouts,
+      db.sleep,
+      db.payments,
+      db.exercises,
+      db.categories,
+      db.settings,
+      db.templates,
+      db.bodyWeights,
+    ],
     async () => ({
       app: BACKUP_APP,
       schemaVersion: BACKUP_SCHEMA_VERSION,
@@ -63,6 +75,7 @@ export async function exportBackup(db: GrindDB, now = Date.now()): Promise<Backu
         categories: await db.categories.toArray(),
         settings: await db.settings.toArray(),
         templates: await db.templates.toArray(),
+        bodyWeights: await db.bodyWeights.toArray(),
       },
     }),
   )
@@ -116,6 +129,7 @@ export function summarizeBackup(backup: Backup): BackupSummary {
     categories: data.categories.length,
     settings: data.settings.length,
     templates: data.templates.length,
+    bodyWeights: data.bodyWeights.length,
   }
 }
 
@@ -146,6 +160,7 @@ export async function importBackup(
     db.categories,
     db.settings,
     db.templates,
+    db.bodyWeights,
   ]
   return db.transaction('rw', tables, async () => {
     const { data } = backup
@@ -157,6 +172,7 @@ export async function importBackup(
       await db.sleep.bulkAdd(data.sleep)
       await db.payments.bulkAdd(data.payments)
       await db.templates.bulkAdd(data.templates)
+      await db.bodyWeights.bulkAdd(data.bodyWeights)
       await db.settings.put(data.settings[0] ?? DEFAULT_SETTINGS)
       const written = Object.values(summarizeBackup(backup)).reduce((a, b) => a + b, 0)
       return { written, skipped: 0 }
@@ -206,22 +222,10 @@ async function mergeBackup(db: GrindDB, data: BackupData): Promise<ImportResult>
     }
   }
 
-  // One entry per night: when both sides logged the same night under
-  // different ids, the one updated last wins.
-  for (const incoming of data.sleep) {
-    const sameNight = await db.sleep.where('date').equals(incoming.date).first()
-    if (sameNight && sameNight.id !== incoming.id) {
-      if (incoming.updatedAt > sameNight.updatedAt) {
-        await db.sleep.delete(sameNight.id)
-        await db.sleep.add(incoming)
-        result.written += 1
-      } else {
-        result.skipped += 1
-      }
-    } else {
-      await upsert(db.sleep, incoming, result)
-    }
-  }
+  // One entry per night, and one weigh-in per day: when both sides logged the
+  // same day under different ids, the one updated last wins.
+  for (const incoming of data.sleep) await upsertByDate(db.sleep, incoming, result)
+  for (const incoming of data.bodyWeights) await upsertByDate(db.bodyWeights, incoming, result)
 
   // Settings are this device's: a merge only brings over a newer backup date.
   const incomingSettings = data.settings[0]
@@ -244,6 +248,25 @@ async function upsert<T extends Meta>(
   }
   await table.put(incoming)
   result.written += 1
+}
+
+async function upsertByDate<T extends Meta & { date: string }>(
+  table: Table<T, ID>,
+  incoming: T,
+  result: ImportResult,
+) {
+  const sameDay = await table.where('date').equals(incoming.date).first()
+  if (sameDay && sameDay.id !== incoming.id) {
+    if (incoming.updatedAt > sameDay.updatedAt) {
+      await table.delete(sameDay.id)
+      await table.add(incoming)
+      result.written += 1
+    } else {
+      result.skipped += 1
+    }
+  } else {
+    await upsert(table, incoming, result)
+  }
 }
 
 function remapWorkout(workout: Workout, remap: Map<ID, ID>): Workout {
@@ -277,6 +300,7 @@ export async function deleteAllData(db: GrindDB, now = Date.now()): Promise<void
     db.categories,
     db.settings,
     db.templates,
+    db.bodyWeights,
   ]
   await db.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()))
