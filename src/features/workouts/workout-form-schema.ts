@@ -1,6 +1,13 @@
 import { format } from 'date-fns'
 import { z } from 'zod'
-import type { WeightUnit, Workout, WorkoutInput, WorkoutSet } from '@/db/schema'
+import type {
+  WeightUnit,
+  Workout,
+  WorkoutInput,
+  WorkoutSet,
+  WorkoutTemplate,
+  WorkoutTemplateInput,
+} from '@/db/schema'
 import { convertWeight } from '@/lib/calculations/workouts'
 import { isDayKey, TIME_OF_DAY_PATTERN, todayKey } from '@/lib/dates'
 
@@ -154,12 +161,31 @@ export function copySets(sets: WorkoutSet[], from: WeightUnit, to: WeightUnit): 
   )
 }
 
-/** "Repeat last Push": the earlier workout's exercises and sets. */
-export function repeatEntries(previous: Workout, unit: WeightUnit): EntryValues[] {
+/** "Repeat last Push" or "start from a template": its exercises and sets, in `unit`. */
+export function repeatEntries(
+  previous: Pick<Workout, 'entries' | 'unit'>,
+  unit: WeightUnit,
+): EntryValues[] {
   return previous.entries.map((e) => ({
     exerciseId: e.exerciseId,
     sets: copySets(e.sets, previous.unit, unit),
   }))
+}
+
+/** A template in the workout form, which edits templates too (without the session details). */
+export function templateToForm(template: WorkoutTemplate | undefined): WorkoutFormValues {
+  const values = emptyWorkoutForm()
+  if (!template) return values
+  return { ...values, name: template.name, entries: repeatEntries(template, template.unit) }
+}
+
+/** Keeps what a template stores: the name, unit, exercises and sets. */
+export function toTemplateInput({
+  name,
+  unit,
+  entries,
+}: Pick<WorkoutInput, 'name' | 'unit' | 'entries'>): WorkoutTemplateInput {
+  return { name, unit, entries }
 }
 
 /** Whether a new workout has anything worth keeping as a draft. */

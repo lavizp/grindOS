@@ -342,9 +342,57 @@ describe('exercise merging', () => {
     expect((await ctx.repos.exercises.usageCounts()).get('ex_bench_press')).toBe(1)
   })
 
+  it('moves template entries too', async () => {
+    const dupe = await ctx.repos.exercises.create({ name: 'Bench', kind: 'weighted' })
+    const template = await ctx.repos.templates.create({
+      name: 'Push',
+      unit: 'kg',
+      entries: [{ exerciseId: dupe.id, sets: [{ reps: 5, weight: 60 }] }],
+    })
+    ctx.clock.advance()
+    await ctx.repos.exercises.merge(dupe.id, 'ex_bench_press')
+
+    const merged = await ctx.repos.templates.getById(template.id)
+    expect(merged?.entries[0].exerciseId).toBe('ex_bench_press')
+    expect(merged!.updatedAt).toBeGreaterThan(template.updatedAt)
+  })
+
   it('refuses to merge into itself or a missing exercise', async () => {
     await expect(ctx.repos.exercises.merge('ex_dips', 'ex_dips')).rejects.toThrow()
     await expect(ctx.repos.exercises.merge('ex_dips', 'nope')).rejects.toThrow()
     expect(await ctx.repos.exercises.getById('ex_dips')).toBeDefined()
+  })
+})
+
+describe('templates', () => {
+  const push = {
+    name: 'Push',
+    unit: 'kg' as const,
+    entries: [{ exerciseId: 'ex_bench_press', sets: [{ reps: 8, weight: 60 }, { reps: 8 }] }],
+  }
+
+  it('starts empty', async () => {
+    expect(await ctx.repos.templates.list()).toEqual([])
+  })
+
+  it('creates, lists by name and finds by name in any case', async () => {
+    await ctx.repos.templates.create(push)
+    await ctx.repos.templates.create({ ...push, name: 'Legs', entries: [] })
+    expect((await ctx.repos.templates.list()).map((t) => t.name)).toEqual(['Legs', 'Push'])
+    expect(await ctx.repos.templates.getByName(' push ')).toMatchObject(push)
+  })
+
+  it('rejects a second template with the same name', async () => {
+    await ctx.repos.templates.create(push)
+    await expect(ctx.repos.templates.create({ ...push, name: 'PUSH' })).rejects.toThrow(
+      DuplicateRecordError,
+    )
+  })
+
+  it('requires a name and at least one set per exercise', async () => {
+    await expect(ctx.repos.templates.create({ ...push, name: '  ' })).rejects.toThrow()
+    await expect(
+      ctx.repos.templates.create({ ...push, entries: [{ exerciseId: 'ex_dips', sets: [] }] }),
+    ).rejects.toThrow()
   })
 })

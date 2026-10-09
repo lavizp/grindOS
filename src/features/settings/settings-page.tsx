@@ -6,7 +6,7 @@ import { PageSkeleton } from '@/components/common/page-skeleton'
 import { SegmentedControl } from '@/components/common/segmented-control'
 import { repositories } from '@/db'
 import type { Theme, WeightUnit } from '@/db/schema'
-import { useCategories, useExercises, useSettings } from '@/hooks/use-data'
+import { useCategories, useExercises, useSettings, useTemplates } from '@/hooks/use-data'
 import { BackupSection } from '@/features/settings/backup-section'
 import { DeleteAllSection } from '@/features/settings/delete-all-section'
 import { currencyOptions, sleepTargetOptions } from '@/features/settings/options'
@@ -33,6 +33,7 @@ export function SettingsPage() {
   const settings = useSettings()
   const categories = useCategories()
   const exercises = useExercises()
+  const templates = useTemplates()
   const currencies = useMemo(() => currencyOptions(), [])
 
   if (!settings) {
@@ -128,6 +129,11 @@ export function SettingsPage() {
             count={categories?.length}
           />
           <ManageLink to="/settings/exercises" label="Exercises" count={exercises?.length} />
+          <ManageLink
+            to="/settings/templates"
+            label="Workout templates"
+            count={templates?.length}
+          />
         </nav>
 
         <BackupSection lastBackupAt={settings.lastBackupAt} />

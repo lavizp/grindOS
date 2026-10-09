@@ -13,6 +13,9 @@ const workoutSheet = () =>
 const sleepSheet = () =>
   import('@/features/sleep/sleep-sheet').then((m) => ({ Component: m.SleepSheet }))
 
+const templateSheet = () =>
+  import('@/features/templates/template-sheet').then((m) => ({ Component: m.TemplateSheet }))
+
 const paymentSheet = () =>
   import('@/features/spending/payment-sheet').then((m) => ({ Component: m.PaymentSheet }))
 
@@ -83,6 +86,17 @@ export const routes: RouteObject[] = [
           import('@/features/settings/exercises-page').then((m) => ({
             Component: m.ExercisesPage,
           })),
+      },
+      {
+        path: 'settings/templates',
+        lazy: () =>
+          import('@/features/templates/templates-page').then((m) => ({
+            Component: m.TemplatesPage,
+          })),
+        children: [
+          { path: 'new', lazy: templateSheet },
+          { path: ':id', lazy: templateSheet },
+        ],
       },
       { path: '*', Component: NotFoundPage },
     ],

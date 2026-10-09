@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, Repeat2 } from 'lucide-react'
+import { ClipboardList, Plus, Repeat2 } from 'lucide-react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import type { Exercise, ExerciseKind, ID, WeightUnit, Workout, WorkoutInput } from '@/db/schema'
+import type {
+  Exercise,
+  ExerciseKind,
+  ID,
+  WeightUnit,
+  Workout,
+  WorkoutInput,
+  WorkoutTemplate,
+} from '@/db/schema'
 import { EntryEditor, type LastTime } from '@/features/workouts/entry-editor'
 import { ExercisePicker } from '@/features/workouts/exercise-picker'
 import {
@@ -33,6 +41,10 @@ interface WorkoutFormProps {
   /** Recent workouts, newest first: names, "repeat last" and "last time" hints. */
   history: Workout[]
   editingId?: ID
+  /** Saved routines to start from while the workout has no exercises yet. */
+  templates?: WorkoutTemplate[]
+  /** A template keeps only the name, exercises and sets, so the session details are hidden. */
+  variant?: 'workout' | 'template'
   onSubmit: (input: WorkoutInput) => void | Promise<void>
   /** Called on every change, e.g. to keep a draft. */
   onValuesChange?: (values: WorkoutFormValues) => void
@@ -60,6 +72,8 @@ export function WorkoutForm({
   exercises,
   history,
   editingId,
+  templates = [],
+  variant = 'workout',
   onSubmit,
   onValuesChange,
   createExercise,
@@ -128,6 +142,12 @@ export function WorkoutForm({
     append({ exerciseId: exercise.id, sets }, { shouldFocus: false })
   }
 
+  function applyTemplate(template: WorkoutTemplate) {
+    setValue('name', template.name, { shouldDirty: true, shouldValidate: !!errors.name })
+    replace(repeatEntries(template, unit))
+  }
+
+  const isTemplate = variant === 'template'
   const usedIds = new Set(fields.map((f) => f.exerciseId))
   const yesterday = addDaysToKey(today, -1)
 
@@ -140,7 +160,7 @@ export function WorkoutForm({
     >
       <div>
         <Label htmlFor="workout-name" className="mb-2">
-          Workout
+          {isTemplate ? 'Name' : 'Workout'}
         </Label>
         <Input
           id="workout-name"
@@ -186,6 +206,31 @@ export function WorkoutForm({
             </span>
           )}
         </div>
+
+        {fields.length === 0 && !isTemplate && templates.length > 0 && (
+          <div role="group" aria-label="Templates" className="flex flex-col gap-2">
+            {templates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => applyTemplate(template)}
+                className="flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-left outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ClipboardList className="size-5 shrink-0 text-workout" aria-hidden />
+                <span className="min-w-0">
+                  <span className="block font-medium">Start {template.name}</span>
+                  <span className="block truncate text-sm text-muted-foreground">
+                    {template.entries.length === 0
+                      ? 'No exercises'
+                      : template.entries
+                          .map((e) => exerciseById.get(e.exerciseId)?.name ?? 'Unknown exercise')
+                          .join(', ')}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {fields.length === 0 && previous && (
           <button
@@ -246,98 +291,102 @@ export function WorkoutForm({
         )}
       </div>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium">Date</legend>
-        <div className="flex flex-wrap items-center gap-2">
-          {[
-            { value: today, label: 'Today' },
-            { value: yesterday, label: 'Yesterday' },
-          ].map((option) => (
+      {!isTemplate && (
+        <>
+          <fieldset>
+            <legend className="mb-2 text-sm font-medium">Date</legend>
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                { value: today, label: 'Today' },
+                { value: yesterday, label: 'Yesterday' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={date === option.value}
+                  onClick={() =>
+                    setValue('date', option.value, { shouldDirty: true, shouldValidate: true })
+                  }
+                  className={cn(chip, date === option.value ? chipActive : chipIdle)}
+                >
+                  {option.label}
+                </button>
+              ))}
+              <Label htmlFor="workout-date" className="sr-only">
+                Pick a date
+              </Label>
+              <input
+                id="workout-date"
+                type="date"
+                max={today}
+                aria-invalid={!!errors.date}
+                className={cn(
+                  chip,
+                  'min-w-0 text-base',
+                  date !== today && date !== yesterday ? chipActive : chipIdle,
+                )}
+                {...register('date')}
+              />
+            </div>
+            <FieldError id="date-error" message={errors.date?.message} />
+          </fieldset>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="start-time" className="mb-2">
+                Started at
+              </Label>
+              <input
+                id="start-time"
+                type="time"
+                aria-invalid={!!errors.startTime}
+                className="tabular h-11 w-full min-w-0 rounded-xl border bg-card px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                {...register('startTime')}
+              />
+              <FieldError id="start-error" message={errors.startTime?.message} />
+            </div>
+            <div>
+              <Label htmlFor="duration" className="mb-2">
+                Minutes
+              </Label>
+              <Input
+                id="duration"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="Optional"
+                aria-invalid={!!errors.durationMin}
+                aria-describedby={errors.durationMin ? 'duration-error' : undefined}
+                className="tabular h-11 rounded-xl bg-card"
+                {...register('durationMin')}
+              />
+              <FieldError id="duration-error" message={errors.durationMin?.message} />
+            </div>
+          </div>
+
+          {showNotes ? (
+            <div>
+              <Label htmlFor="notes" className="mb-2">
+                Note
+              </Label>
+              <Textarea
+                id="notes"
+                rows={3}
+                autoFocus={defaultValues.notes === ''}
+                className="rounded-xl bg-card"
+                {...register('notes')}
+              />
+              <FieldError id="notes-error" message={errors.notes?.message} />
+            </div>
+          ) : (
             <button
-              key={option.value}
               type="button"
-              aria-pressed={date === option.value}
-              onClick={() =>
-                setValue('date', option.value, { shouldDirty: true, shouldValidate: true })
-              }
-              className={cn(chip, date === option.value ? chipActive : chipIdle)}
+              onClick={() => setShowNotes(true)}
+              className="self-start text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
             >
-              {option.label}
+              Add a note
             </button>
-          ))}
-          <Label htmlFor="workout-date" className="sr-only">
-            Pick a date
-          </Label>
-          <input
-            id="workout-date"
-            type="date"
-            max={today}
-            aria-invalid={!!errors.date}
-            className={cn(
-              chip,
-              'min-w-0 text-base',
-              date !== today && date !== yesterday ? chipActive : chipIdle,
-            )}
-            {...register('date')}
-          />
-        </div>
-        <FieldError id="date-error" message={errors.date?.message} />
-      </fieldset>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="start-time" className="mb-2">
-            Started at
-          </Label>
-          <input
-            id="start-time"
-            type="time"
-            aria-invalid={!!errors.startTime}
-            className="tabular h-11 w-full min-w-0 rounded-xl border bg-card px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            {...register('startTime')}
-          />
-          <FieldError id="start-error" message={errors.startTime?.message} />
-        </div>
-        <div>
-          <Label htmlFor="duration" className="mb-2">
-            Minutes
-          </Label>
-          <Input
-            id="duration"
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="Optional"
-            aria-invalid={!!errors.durationMin}
-            aria-describedby={errors.durationMin ? 'duration-error' : undefined}
-            className="tabular h-11 rounded-xl bg-card"
-            {...register('durationMin')}
-          />
-          <FieldError id="duration-error" message={errors.durationMin?.message} />
-        </div>
-      </div>
-
-      {showNotes ? (
-        <div>
-          <Label htmlFor="notes" className="mb-2">
-            Note
-          </Label>
-          <Textarea
-            id="notes"
-            rows={3}
-            autoFocus={defaultValues.notes === ''}
-            className="rounded-xl bg-card"
-            {...register('notes')}
-          />
-          <FieldError id="notes-error" message={errors.notes?.message} />
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowNotes(true)}
-          className="self-start text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
-        >
-          Add a note
-        </button>
+          )}
+        </>
       )}
     </form>
   )
