@@ -264,6 +264,7 @@ export function WorkoutForm({
             exercise={exerciseById.get(field.exerciseId)}
             unit={unit}
             lastTime={lastTimeFor(field.exerciseId)}
+            allowNotes={!isTemplate}
             onMove={move}
             onRemove={remove}
           />

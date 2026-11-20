@@ -32,6 +32,8 @@ interface EntryEditorProps {
   exercise: Exercise | undefined
   unit: WeightUnit
   lastTime?: LastTime
+  /** Templates don't keep notes, so their editor leaves the field out. */
+  allowNotes?: boolean
   onMove: (from: number, to: number) => void
   onRemove: (index: number) => void
 }
@@ -50,6 +52,7 @@ export function EntryEditor({
   exercise,
   unit,
   lastTime,
+  allowNotes = true,
   onMove,
   onRemove,
 }: EntryEditorProps) {
@@ -76,7 +79,7 @@ export function EntryEditor({
               Last time ({lastTime.when}): {lastTime.summary}
             </p>
           )}
-          {lastTime?.notes && (
+          {allowNotes && lastTime?.notes && (
             <p className="mt-0.5 line-clamp-3 text-sm whitespace-pre-line text-muted-foreground italic">
               “{lastTime.notes}”
             </p>
@@ -188,7 +191,7 @@ export function EntryEditor({
         Add set
       </Button>
 
-      {showNote ? (
+      {!allowNotes ? null : showNote ? (
         <div className="mt-1.5">
           <Label htmlFor={`entry-note-${index}`} className="sr-only">
             {`Note for ${name}`}
