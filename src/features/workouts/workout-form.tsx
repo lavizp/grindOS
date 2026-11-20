@@ -24,7 +24,7 @@ import {
   workoutFormSchema,
   type WorkoutFormValues,
 } from '@/features/workouts/workout-form-schema'
-import { setsFor } from '@/lib/calculations/workouts'
+import { notesFor, setsFor } from '@/lib/calculations/workouts'
 import { addDaysToKey, todayKey } from '@/lib/dates'
 import { formatRelativeDay, formatSets } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
@@ -132,6 +132,7 @@ export function WorkoutForm({
       when: formatRelativeDay(workout.date, today),
       summary: formatSets(sets, workout.unit),
       sets: copySets(sets, workout.unit, unit),
+      notes: notesFor(workout, exerciseId),
     }
   }
 
@@ -139,7 +140,7 @@ export function WorkoutForm({
     setPicking(false)
     // Start from last time's sets; most sessions repeat or nudge them.
     const sets = lastTimeFor(exercise.id)?.sets ?? [{ reps: '', weight: '' }]
-    append({ exerciseId: exercise.id, sets }, { shouldFocus: false })
+    append({ exerciseId: exercise.id, sets, notes: '' }, { shouldFocus: false })
   }
 
   function applyTemplate(template: WorkoutTemplate) {
@@ -263,6 +264,7 @@ export function WorkoutForm({
             exercise={exerciseById.get(field.exerciseId)}
             unit={unit}
             lastTime={lastTimeFor(field.exerciseId)}
+            allowNotes={!isTemplate}
             onMove={move}
             onRemove={remove}
           />

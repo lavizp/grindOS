@@ -179,12 +179,21 @@ export function ExercisePage() {
                 <li key={session.workoutId}>
                   <Link
                     to={`/workouts/${session.workoutId}`}
-                    className="-mx-2 flex items-baseline justify-between gap-3 rounded-xl px-2 py-2 outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring active:bg-muted"
+                    className="-mx-2 block rounded-xl px-2 py-2 outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring active:bg-muted"
                   >
-                    <span className="shrink-0 font-medium">{formatRelativeDay(session.date)}</span>
-                    <span className="tabular truncate text-sm text-muted-foreground">
-                      {formatSets(roundSets(session), unit)}
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="shrink-0 font-medium">
+                        {formatRelativeDay(session.date)}
+                      </span>
+                      <span className="tabular truncate text-sm text-muted-foreground">
+                        {formatSets(roundSets(session), unit)}
+                      </span>
                     </span>
+                    {session.notes && (
+                      <span className="mt-0.5 block text-sm whitespace-pre-line text-muted-foreground italic">
+                        {session.notes}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}
