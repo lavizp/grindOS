@@ -24,8 +24,9 @@ const values = (overrides: Partial<WorkoutFormValues> = {}): WorkoutFormValues =
         { reps: '8', weight: '60' },
         { reps: '6', weight: '62,5' },
       ],
+      notes: 'Felt easy, add weight next week',
     },
-    { exerciseId: 'ex_dips', sets: [{ reps: '12', weight: '' }] },
+    { exerciseId: 'ex_dips', sets: [{ reps: '12', weight: '' }], notes: '  ' },
   ],
   ...overrides,
 })
@@ -66,8 +67,9 @@ describe('workoutFormSchema', () => {
             { reps: 8, weight: 60 },
             { reps: 6, weight: 62.5 },
           ],
+          notes: 'Felt easy, add weight next week',
         },
-        { exerciseId: 'ex_dips', sets: [{ reps: 12 }] },
+        { exerciseId: 'ex_dips', sets: [{ reps: 12 }], notes: undefined },
       ],
     })
   })
@@ -91,6 +93,7 @@ describe('workoutFormSchema', () => {
               { reps: '', weight: '60' },
               { reps: '8.5', weight: 'heavy' },
             ],
+            notes: '',
           },
         ],
       }),
@@ -106,7 +109,9 @@ describe('workoutFormSchema', () => {
   })
 
   it('needs at least one set per exercise', () => {
-    const result = schema.safeParse(values({ entries: [{ exerciseId: 'ex_dips', sets: [] }] }))
+    const result = schema.safeParse(
+      values({ entries: [{ exerciseId: 'ex_dips', sets: [], notes: '' }] }),
+    )
     expect(messages(result)).toEqual(['Add a set'])
   })
 })
@@ -118,7 +123,11 @@ describe('repeating and copying', () => {
     name: 'Push',
     unit: 'lb',
     entries: [
-      { exerciseId: 'ex_bench_press', sets: [{ reps: 5, weight: 135 }] },
+      {
+        exerciseId: 'ex_bench_press',
+        sets: [{ reps: 5, weight: 135 }],
+        notes: 'Easy, go heavier next week',
+      },
       { exerciseId: 'ex_dips', sets: [{ reps: 10 }, { reps: 8 }] },
     ],
     exerciseIds: ['ex_bench_press', 'ex_dips'],
@@ -128,13 +137,14 @@ describe('repeating and copying', () => {
 
   it('repeats exercises and sets, converting units to the nearest 0.25', () => {
     expect(repeatEntries(previous, 'kg')).toEqual([
-      { exerciseId: 'ex_bench_press', sets: [{ reps: '5', weight: '61.25' }] },
+      { exerciseId: 'ex_bench_press', sets: [{ reps: '5', weight: '61.25' }], notes: '' },
       {
         exerciseId: 'ex_dips',
         sets: [
           { reps: '10', weight: '' },
           { reps: '8', weight: '' },
         ],
+        notes: '',
       },
     ])
     expect(copySets(previous.entries[0].sets, 'lb', 'lb')).toEqual([{ reps: '5', weight: '135' }])

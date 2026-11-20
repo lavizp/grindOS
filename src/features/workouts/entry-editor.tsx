@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, Plus, Trash2, X } from 'lucide-react'
+import { useState } from 'react'
 import {
   useFieldArray,
   type Control,
@@ -7,6 +8,8 @@ import {
   type UseFormRegister,
 } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import type { Exercise, WeightUnit, WorkoutInput } from '@/db/schema'
 import type { SetValues, WorkoutFormValues } from '@/features/workouts/workout-form-schema'
 
@@ -15,6 +18,8 @@ export interface LastTime {
   when: string
   summary: string
   sets: SetValues[]
+  /** What was written about this exercise that day, e.g. "add weight next week". */
+  notes?: string
 }
 
 interface EntryEditorProps {
@@ -52,6 +57,7 @@ export function EntryEditor({
   const name = exercise?.name ?? 'Unknown exercise'
   const bodyweight = exercise?.kind === 'bodyweight'
   const entryErrors = errors.entries?.[index]
+  const [showNote, setShowNote] = useState(() => getValues(`entries.${index}.notes`) !== '')
 
   function addSet() {
     // Copies the set above, so the usual case (same again) is one tap.
@@ -68,6 +74,11 @@ export function EntryEditor({
           {lastTime && (
             <p className="truncate text-sm text-muted-foreground">
               Last time ({lastTime.when}): {lastTime.summary}
+            </p>
+          )}
+          {lastTime?.notes && (
+            <p className="mt-0.5 line-clamp-3 text-sm whitespace-pre-line text-muted-foreground italic">
+              “{lastTime.notes}”
             </p>
           )}
         </div>
@@ -176,6 +187,35 @@ export function EntryEditor({
         <Plus data-icon="inline-start" aria-hidden />
         Add set
       </Button>
+
+      {showNote ? (
+        <div className="mt-1.5">
+          <Label htmlFor={`entry-note-${index}`} className="sr-only">
+            {`Note for ${name}`}
+          </Label>
+          <Textarea
+            id={`entry-note-${index}`}
+            rows={2}
+            placeholder="How did it feel? Anything for next time?"
+            aria-invalid={!!entryErrors?.notes}
+            className="rounded-xl bg-card"
+            {...register(`entries.${index}.notes`)}
+          />
+          {entryErrors?.notes?.message && (
+            <p role="alert" className="mt-1 text-sm text-destructive">
+              {entryErrors.notes.message}
+            </p>
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowNote(true)}
+          className="mt-1.5 px-1 text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
+        >
+          Add a note
+        </button>
+      )}
     </section>
   )
 }

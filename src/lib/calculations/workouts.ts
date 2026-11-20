@@ -42,6 +42,14 @@ export function setsFor(workout: Workout, exerciseId: ID): WorkoutSet[] {
   return workout.entries.filter((e) => e.exerciseId === exerciseId).flatMap((e) => e.sets)
 }
 
+/** The notes left on one exercise in a workout, joined if it appears in several entries. */
+export function notesFor(workout: Workout, exerciseId: ID): string | undefined {
+  const notes = workout.entries
+    .filter((e) => e.exerciseId === exerciseId && e.notes)
+    .map((e) => e.notes)
+  return notes.length > 0 ? notes.join('\n') : undefined
+}
+
 /** Sum of reps × weight, in `unit`. Bodyweight sets add nothing. */
 export function getVolume(workouts: Workout[], unit: WeightUnit, exerciseId?: ID): number {
   let total = 0
@@ -156,6 +164,7 @@ export interface ExerciseSession {
   workoutId: ID
   date: DayKey
   sets: WorkoutSet[]
+  notes?: string
   /** Heaviest weight lifted, in the requested unit; null for bodyweight-only sessions. */
   topWeight: number | null
   /** Reps of the heaviest set (most reps for bodyweight). */
@@ -190,6 +199,7 @@ export function getExerciseProgress(
         workoutId: workout.id,
         date: workout.date,
         sets,
+        notes: notesFor(workout, exerciseId),
         topWeight: top?.weight ?? null,
         topReps: top?.reps ?? Math.max(0, ...sets.map((s) => s.reps)),
         bestE1rm: weighted.length

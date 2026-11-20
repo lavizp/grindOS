@@ -20,6 +20,7 @@ export interface SetValues {
 export interface EntryValues {
   exerciseId: string
   sets: SetValues[]
+  notes: string
 }
 
 export interface WorkoutFormValues {
@@ -84,6 +85,7 @@ export function workoutFormSchema({
         z.object({
           exerciseId: z.string().min(1),
           sets: z.array(z.object({ reps: repsField, weight: weightField })).min(1, 'Add a set'),
+          notes: z.string().trim().max(500, 'Keep it under 500 characters'),
         }),
       ),
     })
@@ -97,6 +99,7 @@ export function workoutFormSchema({
       entries: values.entries.map((entry) => ({
         exerciseId: entry.exerciseId,
         sets: entry.sets.map(toSet),
+        notes: entry.notes || undefined,
       })),
     }))
 }
@@ -133,6 +136,7 @@ export function workoutToForm(workout: Workout): WorkoutFormValues {
     entries: workout.entries.map((e) => ({
       exerciseId: e.exerciseId,
       sets: e.sets.map(toSetValues),
+      notes: e.notes ?? '',
     })),
   }
 }
@@ -169,6 +173,8 @@ export function repeatEntries(
   return previous.entries.map((e) => ({
     exerciseId: e.exerciseId,
     sets: copySets(e.sets, previous.unit, unit),
+    // A note belongs to the session it was written in.
+    notes: '',
   }))
 }
 
@@ -185,7 +191,7 @@ export function toTemplateInput({
   unit,
   entries,
 }: Pick<WorkoutInput, 'name' | 'unit' | 'entries'>): WorkoutTemplateInput {
-  return { name, unit, entries }
+  return { name, unit, entries: entries.map(({ exerciseId, sets }) => ({ exerciseId, sets })) }
 }
 
 /** Whether a new workout has anything worth keeping as a draft. */
